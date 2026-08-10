@@ -294,7 +294,7 @@ function cambiarTrabajador(){localStorage.removeItem('gt_worker');selectedWorker
 
 // NAV
 function showSection(id,el){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='dashboard')renderDash();if(id==='alertas')renderAlertas();if(id==='equipo')renderEquipo();}
-async function sbRPC(fn){try{const r=await fetch(`${SB_URL}/rest/v1/rpc/powerbi_${fn}?p_token=${PB_TOKEN}`,{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});return await r.json();}catch(e){return[];}}
+async function sbRPC(fn){try{const r=await fetch(`${SB_URL}/rest/v1/rpc/powerbi_${fn}`,{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_token:PB_TOKEN})});const d=await r.json();return Array.isArray(d)?d:[];}catch(e){return[];}}
 async function loadData(){try{cajasData=await sbRPC('cajas');tempsData=await sbRPC('temperaturas');}catch(e){cajasData=[];tempsData=[];}}
 function renderAll(){document.getElementById('hoy-fecha').textContent=DIAS[DOW]+' '+new Date().toLocaleDateString('es-ES');const w=W[selectedWorker];document.getElementById('worker-badge').textContent=selectedWorker==='admin'?'👑 Admin':w?w.emoji+' '+w.n:'';renderTabs();renderTareas();}
 async function mostrarApp(){document.getElementById('auth-screen').style.display='none';document.getElementById('select-worker').style.display='none';document.getElementById('app').style.display='block';await loadData();renderAll();}
