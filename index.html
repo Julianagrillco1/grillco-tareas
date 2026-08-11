@@ -119,7 +119,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 const SB_URL='https://ctjbngqtsjaixaebyfvk.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0amJuZ3F0c2phaXhhZWJ5ZnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNzI1MjYsImV4cCI6MjA5Njc0ODUyNn0.zz_97nioCgwZPfl5mIx4jY61j_HIZJ-ZWl912pKilpg';
 const PB_TOKEN='granjatop_powerbi_seguro_2026_felipe_924781';
-const IA_URL='http://167.233.212.85:8090';
+const IA_URL='https://167.233.212.85:8090';
 const CLIENT_ID='fe711233-63bd-4a31-b39e-8eea300e8fa3';
 const TENANT_ID='384af78d-5f14-4ef9-a1a9-67f7f34518ca';
 const REDIRECT=window.location.origin+window.location.pathname;
@@ -127,7 +127,7 @@ const AUTH_URL=`https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/autho
 const TOKEN_URL=`https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
 let msUser=null,ausentes=new Set(),iaResult=null,selectedWorker=null,cajasData=[],tempsData=[];
 const CC={'ramirez@grillco.cat':{rol:'admin',area:'todas',label:'Administrador'},'villasante@grillco.cat':{rol:'area',area:'incubacion',label:'Incubación'},'barnat@grillco.cat':{rol:'area',area:'granja',label:'Granja'},'info@grillco.cat':{rol:'area',area:'obrador',label:'Obrador'}};
-const W={napoleon:{n:'Napoleón',a:'granja',d:[1,2,3,4,5],emoji:'👷'},zakaria:{n:'Zakaria',a:'granja',d:[3,4,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷‍♂️'},marina:{n:'Marina',a:'incubacion',d:[1,2,3,4,5],emoji:'👩‍🔬'},damia:{n:'Damia',a:'granja',d:[1,2,3,4,5],r:'cartones',emoji:'📦'},begona:{n:'Begoña',a:'incubacion',d:[1,2,3,4,5],a2:'obrador',d2:[2,3,4,5],h2:'11:30',emoji:'👩‍🔬'},nuevo1:{n:'Nuevo 1',a:'granja',d:[1,2,5,6,0],a2:'incubacion',d2:[6,0],emoji:'🆕'},nuevo2:{n:'Nuevo 2',a:'granja',d:[2,3,4,5,6],emoji:'🆕'},rodrigo:{n:'Rodrigo',a:'obrador',d:[1,2,3,4,5],emoji:'⚙️'}};
+const W={napoleon:{n:'Napoleón',a:'granja',d:[1,2,3,4,5],emoji:'👷'},zakaria:{n:'Zakaria',a:'granja',d:[3,4,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷‍♂️'},marina:{n:'Marina',a:'incubacion',d:[1,2,3,4,5],emoji:'👩‍🔬'},damia:{n:'Damia',a:'granja',d:[1,2,3,4,5],r:'cartones',emoji:'📦'},begona:{n:'Begoña',a:'incubacion',d:[1,2,3,4,5],a2:'obrador',d2:[2,3,4,5],h2:'11:30',emoji:'👩‍🔬'},nuevo1:{n:'Ali',a:'granja',d:[1,2,5,6,0],a2:'incubacion',d2:[6,0],emoji:'🆕'},nuevo2:{n:'Emmanuel',a:'granja',d:[2,3,4,5,6],emoji:'🆕'},rodrigo:{n:'Rodrigo',a:'obrador',d:[1,2,3,4,5],emoji:'⚙️'}};
 const T={granja:{v:['Dar agua','Dar comida','Quitar comidas','Colecta','Cortar cartones','Hacer cajas','Limpiar cajas incubación','Frass + registro','Registros limpieza'],a:['Limpiar suelo','Limpiar estanterías','Limpiar contenedores','Sacar basura','Sacar cartones','Limpiar zona limpieza','Limpiar zona cartones'],r:['Matar arañas','Cinta amarilla','Limpiar paredes','Limpiar zona colecta','Limpiar zona pienso','Limpiar zona frass/clima','Limpiar plataforma elevadora']},incubacion:{v:['Recoger sustratos','Preparar sustratos','Recolecta minigrillos','Preparar cajas comida','Preparar sustrato coco','Registrar en app','Agua aspersor','Registros limpieza'],a:['Limpiar zona incubación','Limpiar tuppers y platos'],r:[]},obrador:{v:['Marmita y tanque frío','Secado','Medición humedad grillo','Medición humedad tamizado','Registros limpieza','Registrar en app','Preparación pedidos'],a:['Tamizar','Limpieza zona húmeda','Limpieza zona seca','Limpieza zona envasado'],r:[]}};
 
 // AUTH
