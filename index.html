@@ -185,7 +185,7 @@ function asignarLocal(){
   return asig;
 }
 
-async function asignarConIA(){
+async function asignarConIA(){return null;}
   try{
     const act=cajasData.filter(c=>c.estado==='activa'),pend=act.filter(c=>c.fecha_colecta&&new Date(c.fecha_colecta)<=new Date());
     const ult=tempsData.length?tempsData[tempsData.length-1]:null;
