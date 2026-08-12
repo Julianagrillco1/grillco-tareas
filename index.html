@@ -3,304 +3,265 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>Grillco — Tareas del día</title>
+<title>Grillco — Tareas</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#F5F2ED;--card:#FFFFFF;--border:#E5E0D8;--ink:#2F3527;--ink2:#5C6B55;--ink3:#8B9A82;--green:#4CAF50;--green-bg:#E8F5E9;--blue:#2196F3;--blue-bg:#E3F2FD;--red:#F44336;--red-bg:#FFEBEE;--amber:#FF9800;--amber-bg:#FFF8E1;--teal:#009688;--teal-bg:#E0F2F1;--purple:#7E57C2;--purple-bg:#EDE7F6;--danger:#D32F2F;--ok:#388E3C;--warn:#F9A825;--radius:12px;--shadow:0 2px 8px rgba(0,0,0,0.08)}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
-.header{background:var(--ink);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
-.header h1{font-size:18px;font-weight:700}
-.btn{padding:8px 16px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
-.btn-primary{background:var(--ink2);color:#fff}
-.btn-sm{padding:5px 10px;font-size:11px}
-.btn-cambiar{background:var(--amber);color:#fff;padding:8px 14px;font-size:13px;border-radius:8px;font-weight:700}
-#auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-#auth-err{display:none;background:var(--red-bg);color:var(--danger);padding:10px;border-radius:8px;margin:10px 0;max-width:400px}
-#app{display:none}#select-worker{display:none}
-.tabs{display:flex;gap:4px;padding:8px 16px;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto}
-.tab{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;color:var(--ink3)}
-.tab.active{background:var(--ink);color:#fff}
-.content{padding:16px;max-width:900px;margin:0 auto}
-.section{display:none}.section.active{display:block}
-.card{background:var(--card);border-radius:var(--radius);padding:16px;margin:10px 0;box-shadow:var(--shadow);border:1px solid var(--border)}
-.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.card-title{font-size:15px;font-weight:700}
-.task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;margin:4px 0}
-.task-item.verde{background:var(--green-bg);border-left:4px solid var(--green)}
-.task-item.azul{background:var(--blue-bg);border-left:4px solid var(--blue)}
-.task-item.rojo{background:var(--red-bg);border-left:4px solid var(--red)}
-.task-item.done{opacity:0.5}
-.task-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--ink3);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;background:#fff}
-.task-check.checked{background:var(--green);border-color:var(--green);color:#fff}
-.task-info{flex:1}.task-name{font-size:13px;font-weight:600}
-.task-obs{width:100%;margin-top:6px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;resize:none;min-height:30px}
-.alert{padding:10px 14px;border-radius:8px;margin:8px 0;font-size:13px}
-.alert-danger{background:var(--red-bg);border-left:4px solid var(--danger);color:var(--danger)}
-.alert-warn{background:var(--amber-bg);border-left:4px solid var(--amber);color:#E65100}
-.alert-ok{background:var(--green-bg);border-left:4px solid var(--ok);color:var(--ok)}
-.alert-info{background:var(--blue-bg);border-left:4px solid var(--blue);color:#0D47A1}
-.worker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.worker-card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);border:1px solid var(--border);cursor:pointer}
-.worker-name{font-size:15px;font-weight:700;margin-bottom:4px}
-.worker-area{font-size:12px;color:var(--ink3);margin-bottom:8px}
-.worker-status{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600}
-.status-presente{background:var(--green-bg);color:var(--ok)}
-.status-ausente{background:var(--red-bg);color:var(--danger)}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:10px 0}
-.stat{background:var(--card);border-radius:var(--radius);padding:14px;text-align:center;box-shadow:var(--shadow)}
-.stat-value{font-size:26px;font-weight:700;font-family:'Space Mono',monospace}
-.stat-label{font-size:11px;color:var(--ink3);margin-top:4px}
-.select-title{text-align:center;font-size:20px;font-weight:700;margin:30px 0 10px}
-.select-sub{text-align:center;font-size:14px;color:var(--ink3);margin-bottom:20px}
-.worker-select-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px;max-width:700px;margin:0 auto;padding:0 20px}
-.worker-select-btn{background:var(--card);border:2px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
-.worker-select-btn:hover{border-color:var(--green);transform:translateY(-2px)}
-.worker-select-btn .emoji{font-size:36px;margin-bottom:8px}
-.worker-select-btn .wname{font-size:16px;font-weight:700}
-.worker-select-btn .warea{font-size:12px;color:var(--ink3);margin-top:4px}
-.area-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
-.area-admin{background:var(--purple-bg);color:var(--purple)}
-.area-granja{background:var(--green-bg);color:var(--ok)}
-.area-incubacion{background:var(--teal-bg);color:var(--teal)}
-.area-obrador{background:#FBE9E7;color:#BF360C}
-.alerta-form{display:grid;gap:8px;margin-top:10px}
-.alerta-form input,.alerta-form select,.alerta-form textarea{padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px}
-.alerta-prog{padding:10px;border-radius:8px;background:var(--amber-bg);border-left:4px solid var(--amber);margin:6px 0;display:flex;justify-content:space-between;align-items:center;font-size:12px}
-.cambiar-bar{background:var(--amber-bg);padding:8px 16px;display:flex;justify-content:center;border-bottom:1px solid var(--border)}
-.hist-row{padding:8px;border-bottom:1px solid var(--border);font-size:12px}
-.hist-done{color:var(--ok)}
-.hist-pending{color:var(--danger)}
-.hist-obs{color:var(--ink3);font-style:italic;margin-left:10px}
-.hist-select{padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;width:100%}
+:root{--bg:#F5F2ED;--card:#FFF;--border:#E5E0D8;--ink:#2F3527;--ink2:#5C6B55;--ink3:#8B9A82;--green:#4CAF50;--green-bg:#E8F5E9;--blue:#2196F3;--blue-bg:#E3F2FD;--red:#F44336;--red-bg:#FFEBEE;--amber:#FF9800;--amber-bg:#FFF8E1;--teal:#009688;--teal-bg:#E0F2F1;--purple:#7E57C2;--purple-bg:#EDE7F6;--danger:#D32F2F;--ok:#388E3C;--warn:#F9A825;--radius:12px;--shadow:0 2px 8px rgba(0,0,0,.08)}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}.header{background:var(--ink);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}.header h1{font-size:18px;font-weight:700}.btn{padding:8px 16px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}.btn-primary{background:var(--ink2);color:#fff}.btn-sm{padding:5px 10px;font-size:11px}.btn-cambiar{background:var(--amber);color:#fff;padding:8px 14px;font-size:13px;border-radius:8px;font-weight:700}#auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}#auth-err{display:none;background:var(--red-bg);color:var(--danger);padding:10px;border-radius:8px;margin:10px 0}#app{display:none}#select-worker{display:none}.tabs{display:flex;gap:4px;padding:8px 16px;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto}.tab{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:var(--ink3)}.tab.active{background:var(--ink);color:#fff}.content{padding:16px;max-width:900px;margin:0 auto}.section{display:none}.section.active{display:block}.card{background:var(--card);border-radius:var(--radius);padding:16px;margin:10px 0;box-shadow:var(--shadow);border:1px solid var(--border)}.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.card-title{font-size:15px;font-weight:700}.task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;margin:4px 0}.task-item.verde{background:var(--green-bg);border-left:4px solid var(--green)}.task-item.azul{background:var(--blue-bg);border-left:4px solid var(--blue)}.task-item.rojo{background:var(--red-bg);border-left:4px solid var(--red)}.task-item.done{opacity:.5}.task-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--ink3);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;background:#fff}.task-check.checked{background:var(--green);border-color:var(--green);color:#fff}.task-info{flex:1}.task-name{font-size:13px;font-weight:600}.task-time{font-size:10px;color:var(--purple);margin-top:2px}.task-obs{width:100%;margin-top:6px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;resize:none;min-height:30px}.alert{padding:10px 14px;border-radius:8px;margin:8px 0;font-size:13px}.alert-danger{background:var(--red-bg);border-left:4px solid var(--danger);color:var(--danger)}.alert-warn{background:var(--amber-bg);border-left:4px solid var(--amber);color:#E65100}.alert-ok{background:var(--green-bg);border-left:4px solid var(--ok);color:var(--ok)}.alert-info{background:var(--blue-bg);border-left:4px solid var(--blue);color:#0D47A1}.worker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.worker-card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);border:1px solid var(--border);cursor:pointer}.worker-name{font-size:15px;font-weight:700;margin-bottom:4px}.worker-area{font-size:12px;color:var(--ink3);margin-bottom:8px}.worker-status{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600}.status-presente{background:var(--green-bg);color:var(--ok)}.status-ausente{background:var(--red-bg);color:var(--danger)}.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:10px 0}.stat{background:var(--card);border-radius:var(--radius);padding:14px;text-align:center;box-shadow:var(--shadow)}.stat-value{font-size:26px;font-weight:700;font-family:'Space Mono',monospace}.stat-label{font-size:11px;color:var(--ink3);margin-top:4px}.select-title{text-align:center;font-size:20px;font-weight:700;margin:30px 0 10px}.select-sub{text-align:center;font-size:14px;color:var(--ink3);margin-bottom:20px}.worker-select-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px;max-width:700px;margin:0 auto;padding:0 20px}.worker-select-btn{background:var(--card);border:2px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;box-shadow:var(--shadow)}.worker-select-btn:hover{border-color:var(--green);transform:translateY(-2px)}.worker-select-btn .emoji{font-size:36px;margin-bottom:8px}.worker-select-btn .wname{font-size:16px;font-weight:700}.worker-select-btn .warea{font-size:12px;color:var(--ink3);margin-top:4px}.area-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}.area-admin{background:var(--purple-bg);color:var(--purple)}.area-granja{background:var(--green-bg);color:var(--ok)}.area-incubacion{background:var(--teal-bg);color:var(--teal)}.area-obrador{background:#FBE9E7;color:#BF360C}.alerta-form{display:grid;gap:8px;margin-top:10px}.alerta-form input,.alerta-form select,.alerta-form textarea{padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px}.alerta-prog{padding:10px;border-radius:8px;background:var(--amber-bg);border-left:4px solid var(--amber);margin:6px 0;display:flex;justify-content:space-between;align-items:center;font-size:12px}.cambiar-bar{background:var(--amber-bg);padding:8px 16px;display:flex;justify-content:center}.hist-row{padding:6px 8px;border-bottom:1px solid var(--border);font-size:12px}.hist-done{color:var(--ok)}.hist-pending{color:var(--danger)}.hist-obs{color:var(--ink3);font-style:italic;margin-left:8px}.hist-select{padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;width:100%}
 @media(max-width:600px){.stats-grid{grid-template-columns:repeat(2,1fr)}.worker-grid,.worker-select-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div id="auth-screen"><h1 style="font-size:36px;color:var(--ink)">grillco</h1><p style="color:var(--ink3);margin:8px 0 24px">Gestión de tareas</p><div id="auth-err"></div><button class="btn btn-primary" style="padding:12px 32px;font-size:15px" onclick="signIn()">Entrar con @grillco.cat</button></div>
-<div id="select-worker"><div class="header"><h1>grillco <span style="font-weight:400;font-size:13px;opacity:0.7">tareas</span></h1><div style="display:flex;align-items:center;gap:10px"><span id="tu2" style="font-size:12px;color:var(--ink3)"></span><button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" onclick="logout()">Salir</button></div></div><div class="select-title">¿Quién eres?</div><div id="area-label" class="select-sub"></div><div id="worker-select" class="worker-select-grid"></div></div>
+<div id="select-worker"><div class="header"><h1>grillco <span style="font-weight:400;font-size:13px;opacity:.7">tareas</span></h1><div style="display:flex;align-items:center;gap:10px"><span id="tu2" style="font-size:12px;color:var(--ink3)"></span><button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff" onclick="logout()">Salir</button></div></div><div class="select-title">¿Quién eres?</div><div id="area-label" class="select-sub"></div><div id="worker-select" class="worker-select-grid"></div></div>
 <div id="app">
-  <div class="header"><h1>grillco <span style="font-weight:400;font-size:13px;opacity:0.7">tareas</span></h1><div style="display:flex;align-items:center;gap:10px"><span id="worker-badge" style="font-size:12px;background:var(--green-bg);color:var(--ok);padding:3px 8px;border-radius:12px;font-weight:600"></span><span id="hoy-fecha" style="font-size:11px;color:var(--ink3)"></span><button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" onclick="logout()">Salir</button></div></div>
-  <div class="cambiar-bar"><button class="btn-cambiar" onclick="cambiarTrabajador()">🔄 Cambiar trabajador</button></div>
-  <div class="tabs" id="tabs-bar"></div>
-  <div class="content">
-    <div id="mis-tareas" class="section active">
-      <div class="card" style="border-left:4px solid var(--purple)"><div style="font-size:14px;font-weight:600;color:var(--purple)">📋 Tareas del día</div><div id="ia-resumen" style="font-size:13px;margin-top:6px;color:var(--ink2)">Cargando...</div></div>
-      <div class="card" style="border-left:4px solid var(--green)"><div class="card-header"><span class="card-title" style="color:var(--green)">🟢 Prioridad máxima</span><span id="cnt-verde" style="font-size:12px;color:var(--ink3)"></span></div><div id="lst-verde"></div></div>
-      <div class="card" style="border-left:4px solid var(--blue)"><div class="card-header"><span class="card-title" style="color:var(--blue)">🔵 Segunda prioridad</span><span id="cnt-azul" style="font-size:12px;color:var(--ink3)"></span></div><div id="lst-azul"></div></div>
-      <div class="card" style="border-left:4px solid var(--red)"><div class="card-header"><span class="card-title" style="color:var(--red)">🔴 Cuando sobre tiempo</span><span id="cnt-rojo" style="font-size:12px;color:var(--ink3)"></span></div><div id="lst-rojo"></div></div>
-    </div>
-    <div id="dashboard" class="section">
-      <div class="stats-grid"><div class="stat"><div class="stat-value" id="st-pres" style="color:var(--green)">—</div><div class="stat-label">Presentes</div></div><div class="stat"><div class="stat-value" id="st-cajas" style="color:var(--amber)">—</div><div class="stat-label">Cajas activas</div></div><div class="stat"><div class="stat-value" id="st-pend" style="color:var(--danger)">—</div><div class="stat-label">Pend. colecta</div></div><div class="stat"><div class="stat-value" id="st-temp" style="color:var(--blue)">—</div><div class="stat-label">Temp. incub.</div></div></div>
-      <div class="card"><div class="card-title">📊 Producción</div><div id="dash-prod" style="margin-top:10px">Cargando...</div></div>
-    </div>
-    <div id="historial" class="section">
-      <div class="card"><div class="card-title">📜 Historial de tareas por trabajador</div>
-        <select class="hist-select" id="hist-worker" onchange="renderHistorial()"><option value="">Selecciona trabajador...</option></select>
-        <div id="hist-content" style="margin-top:10px"></div>
-      </div>
-    </div>
-    <div id="equipo" class="section">
-      <div class="card" style="margin-bottom:12px"><div class="card-title">👥 Equipo — <span id="dia-nom"></span></div><p style="font-size:12px;color:var(--ink3);margin-top:4px">Toca para marcar ausencia (activa IA)</p></div>
-      <div id="wk-list" class="worker-grid"></div>
-      <div class="card" style="margin-top:20px;border-left:4px solid var(--amber)"><div class="card-title">📢 Alertas programadas</div>
-        <div class="alerta-form"><input type="date" id="al-fecha"><select id="al-area"><option value="todas">Todas</option><option value="granja">Granja</option><option value="incubacion">Incubación</option><option value="obrador">Obrador</option></select><select id="al-tipo"><option value="info">ℹ️ Info</option><option value="warn">⚠️ Importante</option><option value="danger">🚨 Urgente</option></select><textarea id="al-msg" placeholder="Ej: Marmita fuera de servicio 10:00-12:00" rows="2"></textarea><button class="btn btn-primary" onclick="guardarAlerta()">Programar</button></div>
-        <div id="lst-al-prog" style="margin-top:10px"></div>
-      </div>
-    </div>
-    <div id="alertas" class="section"><div id="lst-alertas"></div></div>
-  </div>
+<div class="header"><h1>grillco <span style="font-weight:400;font-size:13px;opacity:.7">tareas</span></h1><div style="display:flex;align-items:center;gap:10px"><span id="worker-badge" style="font-size:12px;background:var(--green-bg);color:var(--ok);padding:3px 8px;border-radius:12px;font-weight:600"></span><span id="hoy-fecha" style="font-size:11px;color:var(--ink3)"></span><button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff" onclick="logout()">Salir</button></div></div>
+<div class="cambiar-bar"><button class="btn-cambiar" onclick="cambiarTrabajador()">🔄 Cambiar trabajador</button></div>
+<div class="tabs" id="tabs-bar"></div>
+<div class="content">
+<div id="mis-tareas" class="section active">
+<div class="card" style="border-left:4px solid var(--purple)"><div style="font-size:14px;font-weight:600;color:var(--purple)">📋 Tareas del día</div><div id="ia-resumen" style="font-size:13px;margin-top:6px;color:var(--ink2)">Cargando...</div></div>
+<div class="card" style="border-left:4px solid var(--green)"><div class="card-header"><span class="card-title" style="color:var(--green)">🟢 Prioridad máxima</span><span id="cnt-verde" style="font-size:12px;color:var(--ink3)"></span></div><div id="lst-verde"></div></div>
+<div class="card" style="border-left:4px solid var(--blue)"><div class="card-header"><span class="card-title" style="color:var(--blue)">🔵 Segunda prioridad</span><span id="cnt-azul" style="font-size:12px;color:var(--ink3)"></span></div><div id="lst-azul"></div></div>
+<div class="card" style="border-left:4px solid var(--red)"><div class="card-header"><span class="card-title" style="color:var(--red)">🔴 Cuando sobre tiempo</span><span id="cnt-rojo" style="font-size:12px;color:var(--ink3)"></span></div><div id="lst-rojo"></div></div>
 </div>
+<div id="dashboard" class="section"><div class="stats-grid"><div class="stat"><div class="stat-value" id="st-pres" style="color:var(--green)">—</div><div class="stat-label">Presentes</div></div><div class="stat"><div class="stat-value" id="st-cajas" style="color:var(--amber)">—</div><div class="stat-label">Cajas activas</div></div><div class="stat"><div class="stat-value" id="st-pend" style="color:var(--danger)">—</div><div class="stat-label">Pend. colecta</div></div><div class="stat"><div class="stat-value" id="st-temp" style="color:var(--blue)">—</div><div class="stat-label">Temp. incub.</div></div></div><div class="card"><div class="card-title">📊 Producción</div><div id="dash-prod" style="margin-top:10px">Cargando...</div></div></div>
+<div id="historial" class="section"><div class="card"><div class="card-title">📜 Historial de tareas</div><select class="hist-select" id="hist-worker" onchange="renderHistorial()"><option value="">Selecciona trabajador...</option></select><div id="hist-content" style="margin-top:10px"></div></div></div>
+<div id="equipo" class="section"><div class="card" style="margin-bottom:12px"><div class="card-title">👥 Equipo — <span id="dia-nom"></span></div><p style="font-size:12px;color:var(--ink3);margin-top:4px">Toca para marcar ausencia</p></div><div id="wk-list" class="worker-grid"></div><div class="card" style="margin-top:20px;border-left:4px solid var(--amber)"><div class="card-title">📢 Alertas programadas</div><div class="alerta-form"><input type="date" id="al-fecha"><select id="al-area"><option value="todas">Todas</option><option value="granja">Granja</option><option value="incubacion">Incubación</option><option value="obrador">Obrador</option></select><select id="al-tipo"><option value="info">ℹ️ Info</option><option value="warn">⚠️ Importante</option><option value="danger">🚨 Urgente</option></select><textarea id="al-msg" placeholder="Ej: Marmita fuera de servicio 10:00-12:00" rows="2"></textarea><button class="btn btn-primary" onclick="guardarAlerta()">Programar</button></div><div id="lst-al-prog" style="margin-top:10px"></div></div></div>
+<div id="alertas" class="section"><div id="lst-alertas"></div></div>
+</div></div>
 <script>
-const SB_URL='https://ctjbngqtsjaixaebyfvk.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0amJuZ3F0c2phaXhhZWJ5ZnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNzI1MjYsImV4cCI6MjA5Njc0ODUyNn0.zz_97nioCgwZPfl5mIx4jY61j_HIZJ-ZWl912pKilpg';
-const PB_TOKEN='granjatop_powerbi_seguro_2026_felipe_924781';
-const IA_URL='https://167.233.212.85:8090';
-const CLIENT_ID='fe711233-63bd-4a31-b39e-8eea300e8fa3';
-const TENANT_ID='384af78d-5f14-4ef9-a1a9-67f7f34518ca';
-const REDIRECT=window.location.origin+window.location.pathname;
-const AUTH_URL=`https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize`;
-const TOKEN_URL=`https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
+const SB_URL='https://ctjbngqtsjaixaebyfvk.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0amJuZ3F0c2phaXhhZWJ5ZnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNzI1MjYsImV4cCI6MjA5Njc0ODUyNn0.zz_97nioCgwZPfl5mIx4jY61j_HIZJ-ZWl912pKilpg',PB_TOKEN='granjatop_powerbi_seguro_2026_felipe_924781',IA_URL='https://167.233.212.85:8090',CLIENT_ID='fe711233-63bd-4a31-b39e-8eea300e8fa3',TENANT_ID='384af78d-5f14-4ef9-a1a9-67f7f34518ca';
+const REDIRECT=location.origin+location.pathname,AUTH_URL=`https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize`,TOKEN_URL=`https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
 let msUser=null,ausentes=new Set(),selectedWorker=null,cajasData=[],tempsData=[],iaOverride=null;
-const MAX_COLECTA=14;
+const MAX_COL=14;
 const CC={'ramirez@grillco.cat':{rol:'admin',area:'todas',label:'Administrador'},'villasante@grillco.cat':{rol:'area',area:'incubacion',label:'Incubación'},'barnat@grillco.cat':{rol:'area',area:'granja',label:'Granja'},'info@grillco.cat':{rol:'area',area:'obrador',label:'Obrador'}};
-const W={napoleon:{n:'Napoleón',a:'granja',d:[1,2,3,4,5],emoji:'👷',rol:'aguas_colecta'},zakaria:{n:'Zakaria',a:'granja',d:[3,4,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷‍♂️',rol:'limpieza_comodin'},marina:{n:'Marina',a:'incubacion',d:[1,2,3,4,5],emoji:'👩‍🔬',rol:'incubacion'},damia:{n:'Damia',a:'granja',d:[1,2,3,4,5],emoji:'📦',rol:'cartones',horario:'7:30-13:00'},begona:{n:'Begoña',a:'incubacion',d:[1,2,3,4,5],a2:'obrador',d2:[2,3,4,5],h2:'11:30',emoji:'👩‍🔬',rol:'incubacion_obrador'},ali:{n:'Ali',a:'granja',d:[1,2,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷',rol:'granja_general'},emmanuel:{n:'Emmanuel',a:'granja',d:[2,3,4,5,6],emoji:'👷',rol:'granja_general'},rodrigo:{n:'Rodrigo',a:'obrador',d:[1,2,3,4,5],emoji:'⚙️',rol:'obrador'}};
+const W={napoleon:{n:'Napoleón',a:'granja',d:[1,2,3,4,5],emoji:'👷'},zakaria:{n:'Zakaria',a:'granja',d:[3,4,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷‍♂️'},marina:{n:'Marina',a:'incubacion',d:[1,2,3,4,5],emoji:'👩‍🔬'},damia:{n:'Damia',a:'granja',d:[1,2,3,4,5],emoji:'📦',rol:'cartones'},begona:{n:'Begoña',a:'incubacion',d:[1,2,3,4,5],a2:'obrador',d2:[2,3,4,5],emoji:'👩‍🔬'},ali:{n:'Ali',a:'granja',d:[1,2,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷'},emmanuel:{n:'Emmanuel',a:'granja',d:[2,3,4,5,6],emoji:'👷'},rodrigo:{n:'Rodrigo',a:'obrador',d:[1,2,3,4,5],emoji:'⚙️'}};
+
+// ══════════════════════════════════════
+// HORARIO POR DÍA — Del Excel de la jefa
+// Cada tarea: {t:nombre, min:minutos, pref:[preferidos], alt:[alternativos], prio:'verde'|'azul'|'rojo'}
+// ══════════════════════════════════════
+const HORARIO={
+  1:{ // LUNES
+    nota:'',
+    granja:[
+      {t:'Colecta',min:180,pref:['napoleon','ali'],alt:[],prio:'verde',cajas:true},
+      {t:'Frass (en paralelo a colecta)',min:180,pref:['napoleon','ali'],alt:[],prio:'verde'},
+      {t:'Lavado de contenedores',min:60,pref:['napoleon','ali'],alt:[],prio:'verde'},
+      {t:'Sacar cartones al contenedor',min:20,pref:['napoleon','ali'],alt:[],prio:'verde'},
+      {t:'Dar aguas — todas las zonas',min:360,pref:['begona'],alt:['napoleon','ali'],prio:'verde'},
+      {t:'Quitar comida',min:60,pref:['napoleon','ali'],alt:[],prio:'verde'},
+      {t:'Dar comida',min:240,pref:['napoleon','ali'],alt:[],prio:'verde'},
+      {t:'Hacer cajas (9-13h) + limpiar zona',min:240,pref:['damia'],alt:[],prio:'verde'},
+      {t:'Lavar cajas de incubación',min:40,pref:['napoleon','ali'],alt:[],prio:'verde'},
+      {t:'Registros de limpieza',min:15,pref:['napoleon','ali','damia'],alt:[],prio:'verde'},
+    ],
+    incubacion:[
+      {t:'Marina — todo incubación (8h)',min:480,pref:['marina'],alt:[],prio:'verde'},
+      {t:'Preparar cajas con comidas (incl. agua)',min:78,pref:['begona'],alt:[],prio:'verde'},
+      {t:'Agua aspersor grillos pequeños',min:30,pref:['begona'],alt:[],prio:'verde'},
+    ],
+    obrador:[
+      {t:'Todo obrador (7h)',min:420,pref:['rodrigo'],alt:[],prio:'verde'},
+      {t:'Tamizar',min:60,pref:['rodrigo'],alt:[],prio:'verde'},
+    ]
+  },
+  2:{ // MARTES
+    nota:'',
+    granja:[
+      {t:'Colecta',min:180,pref:['napoleon','emmanuel'],alt:['ali'],prio:'verde',cajas:true},
+      {t:'Frass (en paralelo a colecta)',min:180,pref:['napoleon','emmanuel'],alt:['ali'],prio:'verde'},
+      {t:'Lavado de contenedores',min:60,pref:['napoleon','emmanuel'],alt:['ali'],prio:'verde'},
+      {t:'Sacar cartones al contenedor',min:20,pref:['napoleon','emmanuel'],alt:['ali'],prio:'verde'},
+      {t:'Dar aguas (4h)',min:240,pref:['napoleon'],alt:[],prio:'verde'},
+      {t:'Quitar comida',min:60,pref:['ali','emmanuel'],alt:[],prio:'verde'},
+      {t:'Dar comida',min:240,pref:['ali','emmanuel'],alt:[],prio:'verde'},
+      {t:'Cortar cartones (antes 9am)',min:30,pref:['begona'],alt:[],prio:'verde'},
+      {t:'Hacer cajas (9-13h) + limpiar zona',min:240,pref:['damia'],alt:[],prio:'verde'},
+      {t:'Lavar cajas de incubación',min:40,pref:['ali','emmanuel'],alt:[],prio:'verde'},
+      {t:'Limpiar estanterías',min:120,pref:['begona'],alt:[],prio:'azul'},
+      {t:'Limpiar zona de pienso',min:20,pref:['ali','emmanuel'],alt:[],prio:'azul'},
+      {t:'Cambiar cinta amarilla (c/2 sem)',min:240,pref:['ali','emmanuel'],alt:[],prio:'rojo'},
+      {t:'Matar arañas (si no cinta)',min:120,pref:['ali','emmanuel'],alt:[],prio:'rojo'},
+      {t:'Limpiar colgadores moscas (si no cinta)',min:120,pref:['ali','emmanuel'],alt:[],prio:'rojo'},
+      {t:'Registros de limpieza',min:15,pref:['napoleon','ali','emmanuel','damia'],alt:[],prio:'verde'},
+    ],
+    incubacion:[
+      {t:'Marina — todo incubación (8h)',min:480,pref:['marina'],alt:[],prio:'verde'},
+      {t:'Preparar cajas con comidas (incl. agua)',min:78,pref:['begona'],alt:[],prio:'verde'},
+      {t:'Agua aspersor grillos pequeños',min:30,pref:['begona'],alt:[],prio:'verde'},
+    ],
+    obrador:[
+      {t:'Todo obrador (7h)',min:420,pref:['rodrigo'],alt:[],prio:'verde'},
+      {t:'Tamizar (3:30h)',min:198,pref:['begona','rodrigo'],alt:[],prio:'verde'},
+    ]
+  },
+  3:{ // MIÉRCOLES
+    nota:'⚠️ NO SE DA AGUA NI COMIDA',
+    granja:[
+      {t:'Colecta',min:180,pref:['napoleon','emmanuel','zakaria'],alt:[],prio:'verde',cajas:true},
+      {t:'Frass (en paralelo a colecta)',min:180,pref:['napoleon','emmanuel','zakaria'],alt:[],prio:'verde'},
+      {t:'Lavado de contenedores',min:60,pref:['napoleon','emmanuel','zakaria'],alt:[],prio:'verde'},
+      {t:'Sacar cartones al contenedor',min:20,pref:['napoleon','emmanuel','zakaria'],alt:[],prio:'verde'},
+      {t:'Quitar comida',min:60,pref:['napoleon','emmanuel','zakaria'],alt:[],prio:'verde'},
+      {t:'Cortar cartones (antes 9am)',min:60,pref:['napoleon','emmanuel','zakaria'],alt:[],prio:'verde'},
+      {t:'Hacer cajas (9-13h) + limpiar zona',min:240,pref:['damia'],alt:[],prio:'verde'},
+      {t:'Hacer cajas extra (después 13h)',min:120,pref:['napoleon','emmanuel','zakaria'],alt:[],prio:'azul'},
+      {t:'Lavar cajas de incubación',min:40,pref:['napoleon','emmanuel','zakaria'],alt:[],prio:'verde'},
+      {t:'Limpiar estanterías',min:60,pref:['napoleon','emmanuel','zakaria'],alt:[],prio:'azul'},
+      {t:'Limpiar paredes y puertas',min:90,pref:['begona'],alt:[],prio:'azul'},
+      {t:'Registros de limpieza',min:15,pref:['napoleon','emmanuel','zakaria','damia'],alt:[],prio:'verde'},
+    ],
+    incubacion:[
+      {t:'Marina — todo incubación (8h)',min:480,pref:['marina'],alt:[],prio:'verde'},
+      {t:'Preparar cajas con comidas (incl. agua)',min:78,pref:['begona'],alt:[],prio:'verde'},
+      {t:'Agua aspersor grillos pequeños',min:30,pref:['begona'],alt:[],prio:'verde'},
+    ],
+    obrador:[
+      {t:'Todo obrador (7h)',min:420,pref:['rodrigo'],alt:[],prio:'verde'},
+      {t:'Tamizar (4h)',min:198,pref:['begona','rodrigo'],alt:[],prio:'verde'},
+    ]
+  },
+};
+// Jueves y viernes: copiar miércoles por ahora (tu jefa aún no los completó)
+HORARIO[4]={nota:'',granja:[...HORARIO[3].granja.map(t=>({...t}))],incubacion:[...HORARIO[3].incubacion.map(t=>({...t}))],obrador:[...HORARIO[3].obrador.map(t=>({...t}))]};
+HORARIO[4].granja.splice(4,0,{t:'Dar aguas',min:240,pref:['napoleon'],alt:[],prio:'verde'});
+HORARIO[4].granja.splice(6,0,{t:'Dar comida',min:240,pref:['ali','emmanuel'],alt:[],prio:'verde'});
+HORARIO[5]={...JSON.parse(JSON.stringify(HORARIO[4]))};
+// Fin de semana: mínimo
+HORARIO[6]={nota:'Fin de semana — solo mínimo',granja:[],incubacion:[{t:'Todo incubación',min:480,pref:['zakaria','ali'],alt:[],prio:'verde'}],obrador:[]};
+HORARIO[0]={nota:'Domingo — solo incubación',granja:[],incubacion:[{t:'Todo incubación',min:480,pref:['zakaria','ali'],alt:[],prio:'verde'}],obrador:[]};
 
 // AUTH
-function _rnd(n){const a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a,b=>('0'+b.toString(16)).slice(-2)).join('');}
-async function _sha(s){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));}
-function _b64(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
-async function signIn(){const v=_rnd(32),c=_b64(await _sha(v)),s=_rnd(8);localStorage.setItem('gt_pv',v);localStorage.setItem('gt_st',s);window.location.href=AUTH_URL+'?'+new URLSearchParams({client_id:CLIENT_ID,response_type:'code',redirect_uri:REDIRECT,scope:'User.Read',state:s,code_challenge:c,code_challenge_method:'S256',prompt:'select_account'});}
-async function handleRedirect(){const p=new URLSearchParams(location.search),code=p.get('code');if(p.get('error')){showAuthErr(p.get('error_description'));return false;}if(!code)return false;if(p.get('state')!==localStorage.getItem('gt_st')){showAuthErr('Error seguridad');return false;}const v=localStorage.getItem('gt_pv');if(!v){showAuthErr('Verifier perdido');return false;}try{const r=await fetch(TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:CLIENT_ID,grant_type:'authorization_code',code,redirect_uri:REDIRECT,code_verifier:v}).toString()});const d=await r.json();if(!d.access_token){showAuthErr(d.error_description||'Error');return false;}const u=await(await fetch('https://graph.microsoft.com/v1.0/me',{headers:{Authorization:'Bearer '+d.access_token}})).json();const e=(u.userPrincipalName||u.mail||'').toLowerCase();if(!e.endsWith('@grillco.cat')){showAuthErr('Solo @grillco.cat');return false;}msUser=e;localStorage.setItem('gt_user',e);history.replaceState({},'',REDIRECT);localStorage.removeItem('gt_pv');localStorage.removeItem('gt_st');return true;}catch(e){showAuthErr(e.message);return false;}}
-function showAuthErr(m){const e=document.getElementById('auth-err');e.textContent=m;e.style.display='block';}
-function logout(){localStorage.removeItem('gt_user');localStorage.removeItem('gt_worker');location.href=REDIRECT;}
+function _rnd(n){const a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a,b=>('0'+b.toString(16)).slice(-2)).join('')}async function _sha(s){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))}function _b64(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}async function signIn(){const v=_rnd(32),c=_b64(await _sha(v)),s=_rnd(8);localStorage.setItem('gt_pv',v);localStorage.setItem('gt_st',s);location.href=AUTH_URL+'?'+new URLSearchParams({client_id:CLIENT_ID,response_type:'code',redirect_uri:REDIRECT,scope:'User.Read',state:s,code_challenge:c,code_challenge_method:'S256',prompt:'select_account'})}async function handleRedirect(){const p=new URLSearchParams(location.search),code=p.get('code');if(p.get('error')){showAuthErr(p.get('error_description'));return!1}if(!code)return!1;if(p.get('state')!==localStorage.getItem('gt_st')){showAuthErr('Error seguridad');return!1}const v=localStorage.getItem('gt_pv');if(!v){showAuthErr('Verifier perdido');return!1}try{const r=await fetch(TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:CLIENT_ID,grant_type:'authorization_code',code,redirect_uri:REDIRECT,code_verifier:v}).toString()});const d=await r.json();if(!d.access_token){showAuthErr(d.error_description||'Error');return!1}const u=await(await fetch('https://graph.microsoft.com/v1.0/me',{headers:{Authorization:'Bearer '+d.access_token}})).json();const e=(u.userPrincipalName||u.mail||'').toLowerCase();if(!e.endsWith('@grillco.cat')){showAuthErr('Solo @grillco.cat');return!1}msUser=e;localStorage.setItem('gt_user',e);history.replaceState({},'',REDIRECT);localStorage.removeItem('gt_pv');localStorage.removeItem('gt_st');return!0}catch(e){showAuthErr(e.message);return!1}}function showAuthErr(m){const e=document.getElementById('auth-err');e.textContent=m;e.style.display='block'}function logout(){localStorage.removeItem('gt_user');localStorage.removeItem('gt_worker');location.href=REDIRECT}
 
 // SUPABASE
-async function sbRPC(fn){try{const r=await fetch(`${SB_URL}/rest/v1/rpc/powerbi_${fn}`,{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_token:PB_TOKEN})});const d=await r.json();return Array.isArray(d)?d:[];}catch(e){return[];}}
+async function sbRPC(fn){try{const r=await fetch(`${SB_URL}/rest/v1/rpc/powerbi_${fn}`,{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_token:PB_TOKEN})});const d=await r.json();return Array.isArray(d)?d:[]}catch(e){return[]}}
 
 // ALERTAS
-function getAlertas(){try{return JSON.parse(localStorage.getItem('gt_alertas')||'[]');}catch(e){return[];}}
-function guardarAlerta(){const f=document.getElementById('al-fecha').value,a=document.getElementById('al-area').value,t=document.getElementById('al-tipo').value,m=document.getElementById('al-msg').value.trim();if(!f||!m)return;const als=getAlertas();als.push({fecha:f,area:a,tipo:t,msg:m,id:Date.now()});localStorage.setItem('gt_alertas',JSON.stringify(als));document.getElementById('al-msg').value='';renderAlertasProg();}
-function borrarAlerta(id){localStorage.setItem('gt_alertas',JSON.stringify(getAlertas().filter(a=>a.id!==id)));renderAlertasProg();}
-function renderAlertasProg(){const als=getAlertas().sort((a,b)=>a.fecha.localeCompare(b.fecha));document.getElementById('lst-al-prog').innerHTML=als.length?als.map(a=>`<div class="alerta-prog"><div><strong>${a.fecha}</strong> · ${a.area} · ${a.msg}</div><button class="btn btn-sm" style="background:var(--danger);color:#fff" onclick="borrarAlerta(${a.id})">✕</button></div>`).join(''):'<p style="font-size:12px;color:var(--ink3);padding:8px">Sin alertas programadas</p>';}
+function getAlertas(){try{return JSON.parse(localStorage.getItem('gt_alertas')||'[]')}catch(e){return[]}}
+function guardarAlerta(){const f=document.getElementById('al-fecha').value,a=document.getElementById('al-area').value,t=document.getElementById('al-tipo').value,m=document.getElementById('al-msg').value.trim();if(!f||!m)return;const als=getAlertas();als.push({fecha:f,area:a,tipo:t,msg:m,id:Date.now()});localStorage.setItem('gt_alertas',JSON.stringify(als));document.getElementById('al-msg').value='';renderAlertasProg()}
+function borrarAlerta(id){localStorage.setItem('gt_alertas',JSON.stringify(getAlertas().filter(a=>a.id!==id)));renderAlertasProg()}
+function renderAlertasProg(){const als=getAlertas().sort((a,b)=>a.fecha.localeCompare(b.fecha));document.getElementById('lst-al-prog').innerHTML=als.length?als.map(a=>`<div class="alerta-prog"><div><strong>${a.fecha}</strong> · ${a.area} · ${a.msg}</div><button class="btn btn-sm" style="background:var(--danger);color:#fff" onclick="borrarAlerta(${a.id})">✕</button></div>`).join(''):'<p style="font-size:12px;color:var(--ink3);padding:8px">Sin alertas</p>'}
 
-// HISTORIAL — guarda cada check/obs por trabajador y fecha
-function getHist(){try{return JSON.parse(localStorage.getItem('gt_hist')||'{}');}catch(e){return {};}}
-function saveToHist(workerId,taskName,done,obs){
-  const h=getHist();const key=HOY+'_'+workerId;
-  if(!h[key])h[key]={fecha:HOY,worker:workerId,nombre:W[workerId]?.n||workerId,tareas:{}};
-  h[key].tareas[taskName]={done,obs,hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})};
-  localStorage.setItem('gt_hist',JSON.stringify(h));
-}
-function renderHistorial(){
-  const wid=document.getElementById('hist-worker').value;
-  const h=getHist();
-  if(!wid){document.getElementById('hist-content').innerHTML='<p style="color:var(--ink3);font-size:12px;padding:8px">Selecciona un trabajador</p>';return;}
-  const entries=Object.values(h).filter(e=>e.worker===wid).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  if(!entries.length){document.getElementById('hist-content').innerHTML='<p style="color:var(--ink3);font-size:12px;padding:8px">Sin historial para este trabajador</p>';return;}
-  let html='';
-  entries.forEach(e=>{
-    html+=`<div class="card" style="padding:10px;margin:6px 0"><div style="font-weight:600;font-size:13px;margin-bottom:6px">📅 ${e.fecha} — ${e.nombre}</div>`;
-    for(const[task,info]of Object.entries(e.tareas)){
-      html+=`<div class="hist-row"><span class="${info.done?'hist-done':'hist-pending'}">${info.done?'✅':'❌'}</span> ${task} <span style="font-size:10px;color:var(--ink3)">${info.hora||''}</span>${info.obs?`<span class="hist-obs">"${info.obs}"</span>`:''}</div>`;
-    }
-    html+=`</div>`;
-  });
-  document.getElementById('hist-content').innerHTML=html;
-}
+// HISTORIAL
+function getHist(){try{return JSON.parse(localStorage.getItem('gt_hist')||'{}')}catch(e){return{}}}
+function saveToHist(wid,task,done,obs){const h=getHist(),k=HOY+'_'+wid;if(!h[k])h[k]={fecha:HOY,worker:wid,nombre:W[wid]?.n||wid,tareas:{}};h[k].tareas[task]={done,obs,hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})};localStorage.setItem('gt_hist',JSON.stringify(h))}
+function renderHistorial(){const wid=document.getElementById('hist-worker').value,h=getHist();if(!wid){document.getElementById('hist-content').innerHTML='<p style="color:var(--ink3);font-size:12px;padding:8px">Selecciona un trabajador</p>';return}const entries=Object.values(h).filter(e=>e.worker===wid).sort((a,b)=>b.fecha.localeCompare(a.fecha));if(!entries.length){document.getElementById('hist-content').innerHTML='<p style="color:var(--ink3);font-size:12px;padding:8px">Sin historial</p>';return}let html='';entries.forEach(e=>{html+=`<div class="card" style="padding:10px;margin:6px 0"><div style="font-weight:600;font-size:13px;margin-bottom:6px">📅 ${e.fecha} — ${e.nombre}</div>`;for(const[task,info]of Object.entries(e.tareas))html+=`<div class="hist-row"><span class="${info.done?'hist-done':'hist-pending'}">${info.done?'✅':'❌'}</span> ${task} <span style="font-size:10px;color:var(--ink3)">${info.hora||''}</span>${info.obs?`<span class="hist-obs">"${info.obs}"</span>`:''}</div>`;html+=`</div>`});document.getElementById('hist-content').innerHTML=html}
 
 // LÓGICA
-const DOW=new Date().getDay(),HOY=new Date().toISOString().slice(0,10);
-const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-function esAdmin(){const c=CC[msUser];return c&&c.rol==='admin';}
-function presentes(){const h={};for(const[id,w]of Object.entries(W)){if(w.d.includes(DOW)&&!ausentes.has(id)){let area=w.a;if(w.d2&&w.d2.includes(DOW))area=w.a2;h[id]={...w,id,areaHoy:area};}}return h;}
+const DOW=new Date().getDay(),HOY=new Date().toISOString().slice(0,10),DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+function esAdmin(){const c=CC[msUser];return c&&c.rol==='admin'}
+function presentes(){const h={};for(const[id,w]of Object.entries(W)){if(w.d.includes(DOW)&&!ausentes.has(id)){let area=w.a;if(w.d2&&w.d2.includes(DOW))area=w.a2;h[id]={...w,id,areaHoy:area}}}return h}
 
 function asignarTareas(){
   if(iaOverride)return iaOverride;
   const p=presentes(),asig={};
   for(const[id,w]of Object.entries(p))asig[id]={w,verde:[],azul:[],rojo:[]};
+  const sched=HORARIO[DOW];
+  if(!sched)return asig;
   const pend=cajasData.filter(c=>c.estado==='activa'&&c.fecha_colecta&&new Date(c.fecha_colecta)<=new Date());
-  const cajasHoy=pend.slice(0,MAX_COLECTA);
-
-  // NAPOLEÓN
-  if(asig.napoleon){
-    asig.napoleon.verde.push('Dar aguas — todas las zonas');
-    cajasHoy.forEach(c=>asig.napoleon.verde.push('Colectar caja '+(c.codigo||c.id)));
-  }
-  // DAMIA
-  if(asig.damia){asig.damia.verde.push('Cortar hueveras');asig.damia.verde.push('Armar cajas (objetivo: 13)');asig.damia.verde.push('Limpiar zona de cartones');}
-  // ZAKARIA en granja
-  if(asig.zakaria&&p.zakaria?.areaHoy==='granja'){
-    asig.zakaria.verde.push('Limpieza general — aspiradora y trapeador');asig.zakaria.verde.push('Recoger comidas');asig.zakaria.verde.push('Limpiar cajas de incubación');asig.zakaria.verde.push('Registros de limpieza');
-    asig.zakaria.azul.push('Limpiar estanterías');asig.zakaria.azul.push('Matar arañas');
-    asig.zakaria.rojo.push('Limpiar paredes');asig.zakaria.rojo.push('Cinta amarilla');
-  }
-  // ALI en granja — colecta + frass + lavado
-  if(asig.ali&&p.ali?.areaHoy==='granja'){
-    cajasHoy.forEach(c=>asig.ali.verde.push('Colectar caja '+(c.codigo||c.id)));
-    asig.ali.verde.push('Frass — procesar acumulado');asig.ali.verde.push('Lavado de cajas colectadas');asig.ali.verde.push('Registros de limpieza');
-    asig.ali.azul.push('Sacar basura');asig.ali.azul.push('Sacar cartones al contenedor');
-  }
-  // EMMANUEL en granja — comidas + apoyo
-  if(asig.emmanuel&&p.emmanuel?.areaHoy==='granja'){
-    if(!p.ali){cajasHoy.forEach(c=>asig.emmanuel.verde.push('Colectar caja '+(c.codigo||c.id)));asig.emmanuel.verde.push('Frass — procesar acumulado');asig.emmanuel.verde.push('Lavado de cajas colectadas');}
-    else{asig.emmanuel.verde.push('Dar comida a las zonas');asig.emmanuel.verde.push('Quitar comidas viejas');}
-    asig.emmanuel.verde.push('Registros de limpieza');asig.emmanuel.azul.push('Limpiar suelo');asig.emmanuel.azul.push('Limpiar contenedores');
-  }
-  // Si Ali y Emmanuel no están, Zakaria colecta
-  if(cajasHoy.length>0&&!p.ali&&!p.emmanuel&&asig.zakaria&&p.zakaria?.areaHoy==='granja'){
-    cajasHoy.forEach(c=>asig.zakaria.verde.unshift('Colectar caja '+(c.codigo||c.id)));
-    asig.zakaria.verde.push('Frass + lavado de cajas');
-  }
-  // INCUBACIÓN
-  for(const[id,w]of Object.entries(p)){
-    if(w.areaHoy!=='incubacion'||!asig[id])continue;
-    asig[id].verde.push('Recoger sustratos');asig[id].verde.push('Preparar sustratos');asig[id].verde.push('Recolecta minigrillos');asig[id].verde.push('Preparar cajas con comida');asig[id].verde.push('Agua aspersor grillos pequeños');asig[id].verde.push('Registrar en app');asig[id].verde.push('Registros de limpieza');
-    asig[id].azul.push('Limpiar zona incubación');asig[id].azul.push('Limpiar tuppers y platos');
-    if(w.a2==='obrador'&&w.d2?.includes(DOW))asig[id].verde.push('⏰ 11:30 → Ir al obrador a tamizar');
-  }
-  // OBRADOR
-  for(const[id,w]of Object.entries(p)){
-    if(w.areaHoy!=='obrador'||!asig[id])continue;
-    asig[id].verde.push('Encender y preparar marmita');asig[id].verde.push('Recibir grillos de colecta');asig[id].verde.push('Marmita y tanque frío');asig[id].verde.push('Secado');asig[id].verde.push('Medición humedad grillo');asig[id].verde.push('Medición humedad tamizado');asig[id].verde.push('Registrar en app');asig[id].verde.push('Registros de limpieza');
-    asig[id].azul.push('Limpieza zona húmeda');asig[id].azul.push('Limpieza zona seca');asig[id].azul.push('Limpieza zona envasado');
-  }
+  const cajasHoy=pend.slice(0,MAX_COL);
+  
+  ['granja','incubacion','obrador'].forEach(area=>{
+    (sched[area]||[]).forEach(task=>{
+      // Encontrar quién hace esta tarea (preferido que esté presente)
+      let asignados=task.pref.filter(id=>p[id]&&p[id].areaHoy===area||(task.pref.includes(id)&&p[id]));
+      if(asignados.length===0)asignados=task.alt.filter(id=>p[id]);
+      if(asignados.length===0)asignados=task.pref.filter(id=>p[id]); // cualquier presente de la lista
+      if(asignados.length===0)return;
+      
+      asignados.forEach(wid=>{
+        if(!asig[wid])return;
+        const tiempo=task.min>=60?Math.round(task.min/60*10)/10+'h':task.min+'min';
+        if(task.cajas&&cajasHoy.length>0){
+          // Cada caja como tarea individual
+          cajasHoy.forEach(c=>{
+            asig[wid][task.prio].push({n:'Colectar caja '+(c.codigo||c.id),tiempo});
+          });
+        }else{
+          asig[wid][task.prio].push({n:task.t,tiempo});
+        }
+      });
+    });
+  });
   return asig;
 }
 
+// IA solo para ausencias
 async function recalcularConIA(){
   try{
     const pend=cajasData.filter(c=>c.estado==='activa'&&c.fecha_colecta&&new Date(c.fecha_colecta)<=new Date());
-    const datos=`Cajas activas:${cajasData.filter(c=>c.estado==='activa').length},pendientes:${pend.length},max 14/dia,codigos:${pend.slice(0,14).map(c=>c.codigo||c.id).join(',')}`;
-    const pres=Object.values(presentes()).map(w=>`${w.n}(${w.areaHoy},rol:${w.rol||'general'})`).join(',');
+    const datos=`Cajas:${cajasData.filter(c=>c.estado==='activa').length},pend:${pend.length},max ${MAX_COL}/dia,codigos:${pend.slice(0,MAX_COL).map(c=>c.codigo||c.id).join(',')}`;
+    const pres=Object.values(presentes()).map(w=>`${w.n}(${w.areaHoy})`).join(',');
     const aus=[...ausentes].map(id=>W[id]?.n).join(',');
     const r=await fetch(IA_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({datos,trabajadores:pres,dia:DIAS[DOW]+'. AUSENTES:'+aus+'. Redistribuye.'})});
-    if(r.ok){const txt=await r.text();const clean=txt.replace(/```json/g,'').replace(/```/g,'').trim();iaOverride=JSON.parse(clean);renderAll();}
-  }catch(e){iaOverride=null;}
+    if(r.ok){const txt=await r.text();const clean=txt.replace(/```json/g,'').replace(/```/g,'').trim();iaOverride=JSON.parse(clean);renderEquipo();renderTareas()}
+  }catch(e){iaOverride=null}
 }
 
 // RENDER
-function renderTarea(nombre,prio,workerId){
-  const id='t-'+nombre.replace(/\W/g,'').substring(0,25);const done=localStorage.getItem(id)==='1';const obsKey='obs-'+id;
-  return`<div class="task-item ${prio} ${done?'done':''}"><div class="task-check ${done?'checked':''}" onclick="toggleT('${id}','${nombre.replace(/'/g,"\\'")}','${workerId||''}')">${done?'✓':''}</div><div class="task-info"><div class="task-name">${nombre}</div><textarea class="task-obs" placeholder="Observaciones..." rows="1" onchange="saveObs('${id}','${nombre.replace(/'/g,"\\'")}','${workerId||''}',this.value)">${localStorage.getItem(obsKey)||''}</textarea></div></div>`;
+function renderTarea(tarea,prio,wid){
+  const nombre=typeof tarea==='object'?tarea.n:tarea;
+  const tiempo=typeof tarea==='object'?tarea.tiempo:'';
+  const id='t-'+nombre.replace(/\W/g,'').substring(0,25);
+  const done=localStorage.getItem(id)==='1';
+  return`<div class="task-item ${prio} ${done?'done':''}"><div class="task-check ${done?'checked':''}" onclick="toggleT('${id}','${nombre.replace(/'/g,"\\'")}','${wid||''}')">${done?'✓':''}</div><div class="task-info"><div class="task-name">${nombre}</div>${tiempo?`<div class="task-time">⏱ ${tiempo}</div>`:''}<textarea class="task-obs" placeholder="Observaciones..." rows="1" onchange="saveObs('${id}','${nombre.replace(/'/g,"\\'")}','${wid||''}',this.value)">${localStorage.getItem('obs-'+id)||''}</textarea></div></div>`;
 }
-function toggleT(id,taskName,workerId){
-  const newVal=localStorage.getItem(id)==='1'?'0':'1';
-  localStorage.setItem(id,newVal);
-  if(workerId)saveToHist(workerId,taskName,newVal==='1',localStorage.getItem('obs-'+id)||'');
-  renderTareas();
-}
-function saveObs(id,taskName,workerId,val){
-  localStorage.setItem('obs-'+id,val);
-  if(workerId)saveToHist(workerId,taskName,localStorage.getItem(id)==='1',val);
-}
+function toggleT(id,taskName,wid){const nv=localStorage.getItem(id)==='1'?'0':'1';localStorage.setItem(id,nv);if(wid)saveToHist(wid,taskName,nv==='1',localStorage.getItem('obs-'+id)||'');renderTareas()}
+function saveObs(id,taskName,wid,val){localStorage.setItem('obs-'+id,val);if(wid)saveToHist(wid,taskName,localStorage.getItem(id)==='1',val)}
 
 function renderTareas(){
   const asig=asignarTareas();
+  const sched=HORARIO[DOW];
   if(selectedWorker==='admin'){
-    const p=presentes();const pend=cajasData.filter(c=>c.estado==='activa'&&c.fecha_colecta&&new Date(c.fecha_colecta)<=new Date());
-    let resumen=`👑 ${DIAS[DOW]}: ${Object.keys(p).length} presentes. 📦 ${pend.length} cajas pendientes (máx ${MAX_COLECTA}/día).`;
-    if(ausentes.size>0)resumen+=`<br>⚠️ Ausentes: ${[...ausentes].map(id=>W[id]?.n).join(', ')}`;
-    if(iaOverride)resumen+='<br>🧠 Redistribuido por IA';
-    document.getElementById('ia-resumen').innerHTML=resumen;
-    let allV=[],allA=[],allR=[];
-    for(const[id,a]of Object.entries(asig)){a.verde.forEach(t=>allV.push({n:a.w.n+': '+t,id}));a.azul.forEach(t=>allA.push({n:a.w.n+': '+t,id}));a.rojo.forEach(t=>allR.push({n:a.w.n+': '+t,id}));}
-    document.getElementById('lst-verde').innerHTML=allV.map(t=>renderTarea(t.n,'verde',t.id)).join('');
-    document.getElementById('lst-azul').innerHTML=allA.map(t=>renderTarea(t.n,'azul',t.id)).join('');
-    document.getElementById('lst-rojo').innerHTML=allR.map(t=>renderTarea(t.n,'rojo',t.id)).join('');
-    document.getElementById('cnt-verde').textContent=allV.length;document.getElementById('cnt-azul').textContent=allA.length;document.getElementById('cnt-rojo').textContent=allR.length;
+    const p=presentes(),pend=cajasData.filter(c=>c.estado==='activa'&&c.fecha_colecta&&new Date(c.fecha_colecta)<=new Date());
+    let res=`👑 ${DIAS[DOW]}: ${Object.keys(p).length} presentes. 📦 ${pend.length} cajas pendientes (máx ${MAX_COL}/día).`;
+    if(sched?.nota)res+=`<br>${sched.nota}`;
+    if(ausentes.size>0)res+=`<br>⚠️ Ausentes: ${[...ausentes].map(id=>W[id]?.n).join(', ')}`;
+    if(iaOverride)res+='<br>🧠 Redistribuido por IA';
+    document.getElementById('ia-resumen').innerHTML=res;
+    let aV=[],aA=[],aR=[];
+    for(const[id,a]of Object.entries(asig)){const nm=a.w?.n||W[id]?.n||id;a.verde.forEach(t=>aV.push({t,wid:id,nm}));a.azul.forEach(t=>aA.push({t,wid:id,nm}));a.rojo.forEach(t=>aR.push({t,wid:id,nm}))}
+    document.getElementById('lst-verde').innerHTML=aV.map(x=>renderTarea(typeof x.t==='object'?{n:x.nm+': '+x.t.n,tiempo:x.t.tiempo}:x.nm+': '+x.t,'verde',x.wid)).join('');
+    document.getElementById('lst-azul').innerHTML=aA.map(x=>renderTarea(typeof x.t==='object'?{n:x.nm+': '+x.t.n,tiempo:x.t.tiempo}:x.nm+': '+x.t,'azul',x.wid)).join('');
+    document.getElementById('lst-rojo').innerHTML=aR.map(x=>renderTarea(typeof x.t==='object'?{n:x.nm+': '+x.t.n,tiempo:x.t.tiempo}:x.nm+': '+x.t,'rojo',x.wid)).join('');
+    document.getElementById('cnt-verde').textContent=aV.length;document.getElementById('cnt-azul').textContent=aA.length;document.getElementById('cnt-rojo').textContent=aR.length;
     return;
   }
   const mis=asig[selectedWorker];
-  if(!mis){document.getElementById('ia-resumen').textContent='Hoy no tienes tareas o no es tu día.';return;}
-  let resumen=`Buenos días, <strong>${mis.w.n}</strong>. Hoy ${DIAS[DOW]} trabajas en <strong>${mis.w.areaHoy}</strong>.`;
-  if(iaOverride)resumen+='<br>🧠 Redistribuido por ausencia';
-  document.getElementById('ia-resumen').innerHTML=resumen;
-  document.getElementById('lst-verde').innerHTML=mis.verde.map(n=>renderTarea(n,'verde',selectedWorker)).join('')||'<p style="padding:8px;color:var(--ink3)">Sin tareas verdes</p>';
-  document.getElementById('lst-azul').innerHTML=mis.azul.map(n=>renderTarea(n,'azul',selectedWorker)).join('')||'<p style="padding:8px;color:var(--ink3)">Sin tareas azules</p>';
-  document.getElementById('lst-rojo').innerHTML=mis.rojo.map(n=>renderTarea(n,'rojo',selectedWorker)).join('')||'<p style="padding:8px;color:var(--ink3)">Sin tareas rojas</p>';
-  const cnt=(lst)=>{const d=lst.filter(n=>localStorage.getItem('t-'+n.replace(/\W/g,'').substring(0,25))==='1').length;return`${d}/${lst.length}`;};
+  if(!mis){document.getElementById('ia-resumen').textContent='Hoy no tienes tareas o no es tu día.';return}
+  let res=`Buenos días, <strong>${mis.w?.n||W[selectedWorker]?.n}</strong>. Hoy ${DIAS[DOW]} trabajas en <strong>${mis.w?.areaHoy||'—'}</strong>.`;
+  if(sched?.nota)res+=`<br>${sched.nota}`;
+  if(iaOverride)res+='<br>🧠 Redistribuido por ausencia';
+  document.getElementById('ia-resumen').innerHTML=res;
+  document.getElementById('lst-verde').innerHTML=mis.verde.map(t=>renderTarea(t,'verde',selectedWorker)).join('')||'<p style="padding:8px;color:var(--ink3)">Sin tareas</p>';
+  document.getElementById('lst-azul').innerHTML=mis.azul.map(t=>renderTarea(t,'azul',selectedWorker)).join('')||'<p style="padding:8px;color:var(--ink3)">Sin tareas</p>';
+  document.getElementById('lst-rojo').innerHTML=mis.rojo.map(t=>renderTarea(t,'rojo',selectedWorker)).join('')||'<p style="padding:8px;color:var(--ink3)">Sin tareas</p>';
+  const cnt=lst=>{const d=lst.filter(t=>{const nm=typeof t==='object'?t.n:t;return localStorage.getItem('t-'+nm.replace(/\W/g,'').substring(0,25))==='1'}).length;return`${d}/${lst.length}`};
   document.getElementById('cnt-verde').textContent=cnt(mis.verde);document.getElementById('cnt-azul').textContent=cnt(mis.azul);document.getElementById('cnt-rojo').textContent=cnt(mis.rojo);
 }
 
-function renderEquipo(){const p=presentes();document.getElementById('dia-nom').textContent=DIAS[DOW];let h='';for(const[id,w]of Object.entries(W)){const aqui=p[id]&&!ausentes.has(id);const trabaja=w.d.includes(DOW);h+=`<div class="worker-card" onclick="toggleA('${id}')" style="${!aqui?'opacity:0.5':''}${!trabaja?'opacity:0.3':''}"><div class="worker-name">${w.emoji} ${w.n}</div><div class="worker-area">${w.a}${w.a2?' / '+w.a2:''} ${w.horario?'('+w.horario+')':''}</div><span class="worker-status ${aqui&&trabaja?'status-presente':'status-ausente'}">${!trabaja?'No trabaja hoy':aqui?'Presente':'AUSENTE'}</span>${w.rol==='cartones'?'<span style="font-size:10px;color:var(--amber);margin-left:6px">⚠️ Solo cartones</span>':''}</div>`;}document.getElementById('wk-list').innerHTML=h;renderAlertasProg();}
-function toggleA(id){if(!W[id].d.includes(DOW))return;if(ausentes.has(id))ausentes.delete(id);else ausentes.add(id);iaOverride=null;if(ausentes.size>0)recalcularConIA();renderAll();}
+function renderEquipo(){const p=presentes();document.getElementById('dia-nom').textContent=DIAS[DOW];let h='';for(const[id,w]of Object.entries(W)){const aqui=p[id]&&!ausentes.has(id);const trabaja=w.d.includes(DOW);h+=`<div class="worker-card" onclick="toggleA('${id}')" style="${!aqui?'opacity:.5':''}${!trabaja?'opacity:.3':''}"><div class="worker-name">${w.emoji} ${w.n}</div><div class="worker-area">${w.a}${w.a2?' / '+w.a2:''}</div><span class="worker-status ${aqui&&trabaja?'status-presente':'status-ausente'}">${!trabaja?'No trabaja hoy':aqui?'Presente':'AUSENTE'}</span>${w.rol==='cartones'?'<span style="font-size:10px;color:var(--amber);margin-left:6px">⚠️ Solo cartones</span>':''}</div>`}document.getElementById('wk-list').innerHTML=h;renderAlertasProg()}
+function toggleA(id){if(!W[id].d.includes(DOW))return;if(ausentes.has(id))ausentes.delete(id);else ausentes.add(id);iaOverride=null;renderEquipo();renderTareas();if(ausentes.size>0)setTimeout(()=>recalcularConIA(),100)}
 
-async function renderDash(){const p=presentes();document.getElementById('st-pres').textContent=Object.keys(p).length;const act=cajasData.filter(c=>c.estado==='activa');const pend=act.filter(c=>c.fecha_colecta&&new Date(c.fecha_colecta)<=new Date());const ult=tempsData.length?tempsData[tempsData.length-1]:null;document.getElementById('st-cajas').textContent=act.length;document.getElementById('st-pend').textContent=pend.length;document.getElementById('st-temp').textContent=ult?ult.temp_incubacion+'°C':'—';document.getElementById('dash-prod').innerHTML=`<div class="stats-grid"><div class="stat"><div class="stat-value" style="font-size:18px">${act.length}</div><div class="stat-label">Cajas activas</div></div><div class="stat"><div class="stat-value" style="font-size:18px;color:${pend.length>14?'var(--danger)':'var(--ok)'}">${pend.length}</div><div class="stat-label">Pend. colecta</div></div><div class="stat"><div class="stat-value" style="font-size:18px">${ult?ult.temp_ambiente+'°C':'—'}</div><div class="stat-label">Temp. amb.</div></div><div class="stat"><div class="stat-value" style="font-size:18px;color:${ult&&ult.temp_incubacion>32?'var(--danger)':'var(--ok)'}">${ult?ult.temp_incubacion+'°C':'—'}</div><div class="stat-label">Temp. incub.</div></div></div>`;}
+async function renderDash(){const p=presentes();document.getElementById('st-pres').textContent=Object.keys(p).length;const act=cajasData.filter(c=>c.estado==='activa'),pend=act.filter(c=>c.fecha_colecta&&new Date(c.fecha_colecta)<=new Date()),ult=tempsData.length?tempsData[tempsData.length-1]:null;document.getElementById('st-cajas').textContent=act.length;document.getElementById('st-pend').textContent=pend.length;document.getElementById('st-temp').textContent=ult?ult.temp_incubacion+'°C':'—';document.getElementById('dash-prod').innerHTML=`<div class="stats-grid"><div class="stat"><div class="stat-value" style="font-size:18px">${act.length}</div><div class="stat-label">Cajas activas</div></div><div class="stat"><div class="stat-value" style="font-size:18px;color:${pend.length>14?'var(--danger)':'var(--ok)'}">${pend.length}</div><div class="stat-label">Pend. colecta</div></div><div class="stat"><div class="stat-value" style="font-size:18px">${ult?ult.temp_ambiente+'°C':'—'}</div><div class="stat-label">Temp. amb.</div></div><div class="stat"><div class="stat-value" style="font-size:18px;color:${ult&&ult.temp_incubacion>32?'var(--danger)':'var(--ok)'}">${ult?ult.temp_incubacion+'°C':'—'}</div><div class="stat-label">Temp. incub.</div></div></div>`}
 
-async function renderAlertas(){const al=[];const p=presentes(),np=Object.keys(p).length;if(np<=2)al.push({t:'danger',m:`⚠️ Solo ${np} personas. Solo VERDES.`});if(DOW===0||DOW===6)al.push({t:'warn',m:'📅 Fin de semana. Solo mínimo.'});if(DOW===1)al.push({t:'info',m:'📦 Lunes: posible acumulación.'});if(ausentes.size>0)al.push({t:'warn',m:`👤 Ausentes: ${[...ausentes].map(id=>W[id]?.n).join(', ')}`});const pend=cajasData.filter(c=>c.estado==='activa'&&c.fecha_colecta&&new Date(c.fecha_colecta)<new Date());if(pend.length>MAX_COLECTA)al.push({t:'warn',m:`📦 ${pend.length} pendientes. Máx ${MAX_COLECTA}/día.`});if(pend.length>0)al.push({t:'danger',m:`📦 ${pend.length} cajas VENCIDAS: ${pend.slice(0,5).map(c=>c.codigo||c.id).join(', ')}${pend.length>5?'...':''}`});const ult=tempsData.length?tempsData[tempsData.length-1]:null;if(ult){if(ult.temp_incubacion>32)al.push({t:'danger',m:`🌡️ Incub. ALTA: ${ult.temp_incubacion}°C`});if(ult.temp_incubacion<28)al.push({t:'danger',m:`🌡️ Incub. BAJA: ${ult.temp_incubacion}°C`});}getAlertas().filter(a=>a.fecha===HOY).forEach(a=>{const cfg=CC[msUser]||{area:'todas'};if(a.area==='todas'||a.area===cfg.area||cfg.area==='todas')al.push({t:a.tipo,m:'📢 '+a.msg});});if(!al.length)al.push({t:'ok',m:'✅ Todo en orden.'});document.getElementById('lst-alertas').innerHTML=al.map(a=>`<div class="alert alert-${a.t}">${a.m}</div>`).join('');}
+async function renderAlertas(){const al=[];const p=presentes(),np=Object.keys(p).length;const sched=HORARIO[DOW];if(sched?.nota)al.push({t:'warn',m:sched.nota});if(np<=2)al.push({t:'danger',m:`⚠️ Solo ${np} personas.`});if(DOW===0||DOW===6)al.push({t:'warn',m:'📅 Fin de semana. Solo mínimo.'});if(DOW===1)al.push({t:'info',m:'📦 Lunes: posible acumulación.'});if(ausentes.size>0)al.push({t:'warn',m:`👤 Ausentes: ${[...ausentes].map(id=>W[id]?.n).join(', ')}`});const pend=cajasData.filter(c=>c.estado==='activa'&&c.fecha_colecta&&new Date(c.fecha_colecta)<new Date());if(pend.length>MAX_COL)al.push({t:'warn',m:`📦 ${pend.length} pendientes. Máx ${MAX_COL}/día.`});if(pend.length>0)al.push({t:'danger',m:`📦 ${pend.length} cajas VENCIDAS: ${pend.slice(0,5).map(c=>c.codigo||c.id).join(', ')}${pend.length>5?'...':''}`});const ult=tempsData.length?tempsData[tempsData.length-1]:null;if(ult){if(ult.temp_incubacion>32)al.push({t:'danger',m:`🌡️ Incub. ALTA: ${ult.temp_incubacion}°C`});if(ult.temp_incubacion<28)al.push({t:'danger',m:`🌡️ Incub. BAJA: ${ult.temp_incubacion}°C`})}getAlertas().filter(a=>a.fecha===HOY).forEach(a=>{const cfg=CC[msUser]||{area:'todas'};if(a.area==='todas'||a.area===cfg.area||cfg.area==='todas')al.push({t:a.tipo,m:'📢 '+a.msg})});if(!al.length)al.push({t:'ok',m:'✅ Todo en orden.'});document.getElementById('lst-alertas').innerHTML=al.map(a=>`<div class="alert alert-${a.t}">${a.m}</div>`).join('')}
 
 // SELECCIÓN
-function mostrarSeleccion(){document.getElementById('auth-screen').style.display='none';document.getElementById('app').style.display='none';document.getElementById('select-worker').style.display='block';document.getElementById('tu2').textContent=msUser;const config=CC[msUser]||{rol:'area',area:'granja',label:'Granja'};const admin=config.rol==='admin';let ac=config.area==='granja'?'area-granja':config.area==='incubacion'?'area-incubacion':config.area==='obrador'?'area-obrador':'area-admin';document.getElementById('area-label').innerHTML=`<span class="area-badge ${ac}">${admin?'👑 Administrador':'📍 '+config.label}</span><br>Selecciona tu nombre`;let html='';for(const[id,w]of Object.entries(W)){let aH=w.a;if(w.d2&&w.d2.includes(DOW))aH=w.a2;const th=w.d.includes(DOW);if(!admin&&aH!==config.area)continue;html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('${id}')" style="${!th?'opacity:0.4':''}"><div class="emoji">${w.emoji}</div><div class="wname">${w.n}</div><div class="warea">${aH}${!th?' (no trabaja hoy)':''}</div></div>`;}if(admin)html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('admin')" style="border-color:var(--purple)"><div class="emoji">👑</div><div class="wname">Ver todo</div><div class="warea">Administrador</div></div>`;document.getElementById('worker-select').innerHTML=html;}
-function seleccionarTrabajador(id){selectedWorker=id;localStorage.setItem('gt_worker',id);document.getElementById('select-worker').style.display='none';mostrarApp();}
-function cambiarTrabajador(){localStorage.removeItem('gt_worker');selectedWorker=null;iaOverride=null;mostrarSeleccion();}
+function mostrarSeleccion(){document.getElementById('auth-screen').style.display='none';document.getElementById('app').style.display='none';document.getElementById('select-worker').style.display='block';document.getElementById('tu2').textContent=msUser;const config=CC[msUser]||{rol:'area',area:'granja',label:'Granja'};const admin=config.rol==='admin';let ac=config.area==='granja'?'area-granja':config.area==='incubacion'?'area-incubacion':config.area==='obrador'?'area-obrador':'area-admin';document.getElementById('area-label').innerHTML=`<span class="area-badge ${ac}">${admin?'👑 Administrador':'📍 '+config.label}</span><br>Selecciona tu nombre`;let html='';for(const[id,w]of Object.entries(W)){let aH=w.a;if(w.d2&&w.d2.includes(DOW))aH=w.a2;const th=w.d.includes(DOW);if(!admin&&aH!==config.area)continue;html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('${id}')" style="${!th?'opacity:.4':''}"><div class="emoji">${w.emoji}</div><div class="wname">${w.n}</div><div class="warea">${aH}${!th?' (no trabaja hoy)':''}</div></div>`}if(admin)html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('admin')" style="border-color:var(--purple)"><div class="emoji">👑</div><div class="wname">Ver todo</div><div class="warea">Administrador</div></div>`;document.getElementById('worker-select').innerHTML=html}
+function seleccionarTrabajador(id){selectedWorker=id;localStorage.setItem('gt_worker',id);document.getElementById('select-worker').style.display='none';mostrarApp()}
+function cambiarTrabajador(){localStorage.removeItem('gt_worker');selectedWorker=null;iaOverride=null;mostrarSeleccion()}
 
-function renderTabs(){const admin=esAdmin();let tabs=[{id:'mis-tareas',icon:'📋',label:'Mis tareas'},{id:'alertas',icon:'⚠️',label:'Alertas'}];if(admin)tabs=[{id:'mis-tareas',icon:'📋',label:'Mis tareas'},{id:'dashboard',icon:'📊',label:'Dashboard'},{id:'historial',icon:'📜',label:'Historial'},{id:'equipo',icon:'👥',label:'Equipo'},{id:'alertas',icon:'⚠️',label:'Alertas'}];document.getElementById('tabs-bar').innerHTML=tabs.map((t,i)=>`<div class="tab ${i===0?'active':''}" onclick="showSection('${t.id}',this)">${t.icon} ${t.label}</div>`).join('');}
-function showSection(id,el){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='dashboard')renderDash();if(id==='alertas')renderAlertas();if(id==='equipo')renderEquipo();if(id==='historial'){const sel=document.getElementById('hist-worker');sel.innerHTML='<option value="">Selecciona...</option>'+Object.entries(W).map(([id,w])=>`<option value="${id}">${w.emoji} ${w.n}</option>`).join('');renderHistorial();}}
-async function loadData(){cajasData=await sbRPC('cajas');tempsData=await sbRPC('temperaturas');}
-function renderAll(){document.getElementById('hoy-fecha').textContent=DIAS[DOW]+' '+new Date().toLocaleDateString('es-ES');const w=W[selectedWorker];document.getElementById('worker-badge').textContent=selectedWorker==='admin'?'👑 Admin':w?w.emoji+' '+w.n:'';renderTabs();renderTareas();}
-async function mostrarApp(){document.getElementById('auth-screen').style.display='none';document.getElementById('select-worker').style.display='none';document.getElementById('app').style.display='block';await loadData();renderAll();}
-(async()=>{const p=new URLSearchParams(location.search);if(p.get('code')){if(await handleRedirect()){mostrarSeleccion();}return;}const s=localStorage.getItem('gt_user');if(s){msUser=s;const sw=localStorage.getItem('gt_worker');if(sw){selectedWorker=sw;mostrarApp();}else{mostrarSeleccion();}}})();
+function renderTabs(){const admin=esAdmin();let tabs=[{id:'mis-tareas',icon:'📋',label:'Mis tareas'},{id:'alertas',icon:'⚠️',label:'Alertas'}];if(admin)tabs=[{id:'mis-tareas',icon:'📋',label:'Mis tareas'},{id:'dashboard',icon:'📊',label:'Dashboard'},{id:'historial',icon:'📜',label:'Historial'},{id:'equipo',icon:'👥',label:'Equipo'},{id:'alertas',icon:'⚠️',label:'Alertas'}];document.getElementById('tabs-bar').innerHTML=tabs.map((t,i)=>`<div class="tab ${i===0?'active':''}" onclick="showSection('${t.id}',this)">${t.icon} ${t.label}</div>`).join('')}
+function showSection(id,el){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='dashboard')renderDash();if(id==='alertas')renderAlertas();if(id==='equipo')renderEquipo();if(id==='historial'){document.getElementById('hist-worker').innerHTML='<option value="">Selecciona...</option>'+Object.entries(W).map(([id,w])=>`<option value="${id}">${w.emoji} ${w.n}</option>`).join('');renderHistorial()}}
+async function loadData(){cajasData=await sbRPC('cajas');tempsData=await sbRPC('temperaturas')}
+function renderAll(){document.getElementById('hoy-fecha').textContent=DIAS[DOW]+' '+new Date().toLocaleDateString('es-ES');const w=W[selectedWorker];document.getElementById('worker-badge').textContent=selectedWorker==='admin'?'👑 Admin':w?w.emoji+' '+w.n:'';renderTabs();renderTareas()}
+async function mostrarApp(){document.getElementById('auth-screen').style.display='none';document.getElementById('select-worker').style.display='none';document.getElementById('app').style.display='block';await loadData();renderAll()}
+setInterval(async()=>{await loadData();if(selectedWorker)renderTareas()},15000);
+(async()=>{const p=new URLSearchParams(location.search);if(p.get('code')){if(await handleRedirect())mostrarSeleccion();return}const s=localStorage.getItem('gt_user');if(s){msUser=s;const sw=localStorage.getItem('gt_worker');if(sw){selectedWorker=sw;mostrarApp()}else mostrarSeleccion()}})();
 </script>
 </body>
 </html>
