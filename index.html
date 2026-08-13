@@ -46,6 +46,10 @@
 <div id="dashboard" class="section"><div class="stats-grid"><div class="stat"><div class="stat-value" id="st-pres" style="color:var(--green)">—</div><div class="stat-label">Presentes</div></div><div class="stat"><div class="stat-value" id="st-cajas" style="color:var(--amber)">—</div><div class="stat-label">Cajas activas</div></div><div class="stat"><div class="stat-value" id="st-pend" style="color:var(--danger)">—</div><div class="stat-label">Pend. colecta</div></div><div class="stat"><div class="stat-value" id="st-temp" style="color:var(--blue)">—</div><div class="stat-label">Temp. incub.</div></div></div><div class="card"><div class="card-title">📊 Producción</div><div id="dash-prod" style="margin-top:10px">Cargando...</div></div></div>
 <div id="historial" class="section"><div class="card"><div class="card-title">📜 Historial</div><select class="hist-select" id="hist-worker" onchange="renderHistorial()"><option value="">Selecciona...</option></select><div id="hist-content" style="margin-top:10px"></div></div></div>
 <div id="equipo" class="section"><div class="card" style="margin-bottom:12px"><div class="card-title">👥 Equipo — <span id="dia-nom"></span></div><p style="font-size:12px;color:var(--ink3);margin-top:4px">Toca para marcar ausencia</p></div><div id="wk-list" class="worker-grid"></div><div class="card" style="margin-top:20px;border-left:4px solid var(--amber)"><div class="card-title">📢 Alertas programadas</div><div class="alerta-form"><input type="date" id="al-fecha"><select id="al-area"><option value="todas">Todas</option><option value="granja">Granja</option><option value="incubacion">Incubación</option><option value="obrador">Obrador</option></select><select id="al-tipo"><option value="info">ℹ️ Info</option><option value="warn">⚠️ Importante</option><option value="danger">🚨 Urgente</option></select><textarea id="al-msg" placeholder="Ej: Marmita fuera de servicio 10-12h" rows="2"></textarea><button class="btn btn-primary" onclick="guardarAlerta()">Programar</button></div><div id="lst-al-prog" style="margin-top:10px"></div></div></div>
+<div id="hist-tareas" class="section">
+<div class="card"><div class="card-title">📊 Historial de tareas del día — todas las áreas</div>
+<div id="ht-content" style="margin-top:10px;font-size:12px"><p style="color:var(--ink3)">Cargando tareas del día...</p></div></div>
+</div>
 <div id="alertas" class="section"><div id="lst-alertas"></div></div>
 </div></div>
 <script>
@@ -56,7 +60,7 @@ const MAX_COL=14;
 const PINES={napoleon:'1111',zakaria:'2222',marina:'3333',damia:'4444',begona:'5555',ali:'6666',emmanuel:'7777',rodrigo:'8888',admin:'0000'};
 
 const CC={'ramirez@grillco.cat':{rol:'admin',area:'todas',label:'Administrador'},'villasante@grillco.cat':{rol:'area',area:'incubacion',label:'Incubación'},'barnat@grillco.cat':{rol:'area',area:'granja',label:'Granja'},'info@grillco.cat':{rol:'area',area:'obrador',label:'Obrador'}};
-const W={napoleon:{n:'Napoleón',a:'granja',d:[1,2,3,4,5],emoji:'👷'},zakaria:{n:'Zakaria',a:'granja',d:[3,4,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷‍♂️'},marina:{n:'Marina',a:'incubacion',d:[1,2,3,4,5],emoji:'👩‍🔬'},damia:{n:'Damia',a:'granja',d:[1,2,3,4,5],emoji:'📦',rol:'cartones'},begona:{n:'Begoña',a:'incubacion',d:[1,2,3,4,5],a2:'obrador',d2:[2,3,4,5],emoji:'👩‍🔬'},ali:{n:'Ali',a:'granja',d:[1,2,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷'},emmanuel:{n:'Emmanuel',a:'granja',d:[2,3,4,5,6],emoji:'👷'},rodrigo:{n:'Rodrigo',a:'obrador',d:[1,2,3,4,5],emoji:'⚙️'}};
+const W={napoleon:{n:'Napoleón',a:'granja',d:[1,2,3,4,5],emoji:'👷'},zakaria:{n:'Zakaria',a:'granja',d:[3,4,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷‍♂️'},marina:{n:'Marina',a:'incubacion',d:[1,2,3,4,5],emoji:'👩‍🔬'},damia:{n:'Damia',a:'granja',d:[1,2,3,4,5],emoji:'📦',rol:'cartones'},begona:{n:'Begoña',a:'incubacion',d:[1,2,3,4,5],a2:'obrador',d2:[2,3,4,5],emoji:'👩‍🔬'},ali:{n:'Ali',a:'granja',d:[1,2,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷'},emmanuel:{n:'Emmanuel',a:'granja',d:[2,3,4,5,6],emoji:'👷'},rodrigo:{n:'Rodrigo',a:'obrador',d:[1,2,3,4,5],emoji:'⚙️'},juliana:{n:'Juliana',a:'admin',d:[1,2,3,4,5],emoji:'👩‍💼',rol:'backup_obrador'}};
 
 // HORARIO EXACTO DEL EXCEL — pref=preferidos(negrita), alt=alternativos
 const H={
@@ -72,18 +76,18 @@ const H={
 {t:'Lavar cajas de incubación',min:40,pref:['napoleon','ali'],alt:[],p:'verde'},
 {t:'Registros de limpieza',min:15,pref:['napoleon','ali','damia'],alt:[],p:'verde'},
 ],incubacion:[
-{t:'Todo incubación (8h)',min:480,pref:['marina'],alt:[],p:'verde'},
+{t:'Recoger sustratos',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Preparar sustratos cajitas',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Recolecta minigrillos',min:90,pref:['marina'],alt:[],p:'verde'},{t:'Preparar sustrato coco',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Limpiar tuppers y platos',min:40,pref:['marina'],alt:[],p:'verde'},{t:'Limpiar zona incubación',min:60,pref:['marina'],alt:[],p:'azul'},{t:'Registrar en app',min:15,pref:['marina'],alt:[],p:'verde'},{t:'Registros limpieza',min:15,pref:['marina'],alt:[],p:'verde'},
 {t:'Preparar cajas comida (incl. agua)',min:78,pref:['begona'],alt:[],p:'verde'},
 {t:'Agua aspersor grillos pequeños',min:30,pref:['begona'],alt:[],p:'verde'},
 ],obrador:[
-{t:'Marmita y tanque frío',min:60,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Secado',min:60,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Medición humedad grillo entero',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Medición humedad tamizado',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Registros limpieza + app',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona húmeda',min:40,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona seca',min:40,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona envasado',min:40,pref:['rodrigo'],alt:[],p:'verde'},
+{t:'Marmita y tanque frío',min:60,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Secado',min:60,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Medición humedad grillo entero',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Medición humedad tamizado',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Registros limpieza + app',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona húmeda',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona seca',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona envasado',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
 {t:'Tamizar',min:60,pref:['rodrigo'],alt:[],p:'azul'},
 {t:'Preparación pedidos',min:60,pref:['rodrigo'],alt:[],p:'azul'},
 ]},
@@ -102,18 +106,18 @@ const H={
 {t:'Limpiar zona de pienso',min:20,pref:['ali','emmanuel'],alt:[],p:'azul'},
 {t:'Registros de limpieza',min:15,pref:['napoleon','ali','emmanuel','damia'],alt:[],p:'verde'},
 ],incubacion:[
-{t:'Todo incubación (8h)',min:480,pref:['marina'],alt:[],p:'verde'},
+{t:'Recoger sustratos',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Preparar sustratos cajitas',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Recolecta minigrillos',min:90,pref:['marina'],alt:[],p:'verde'},{t:'Preparar sustrato coco',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Limpiar tuppers y platos',min:40,pref:['marina'],alt:[],p:'verde'},{t:'Limpiar zona incubación',min:60,pref:['marina'],alt:[],p:'azul'},{t:'Registrar en app',min:15,pref:['marina'],alt:[],p:'verde'},{t:'Registros limpieza',min:15,pref:['marina'],alt:[],p:'verde'},
 {t:'Preparar cajas comida (incl. agua)',min:78,pref:['begona'],alt:[],p:'verde'},
 {t:'Agua aspersor grillos pequeños',min:30,pref:['begona'],alt:[],p:'verde'},
 ],obrador:[
-{t:'Marmita y tanque frío',min:60,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Secado',min:60,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Medición humedad grillo entero',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Medición humedad tamizado',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Registros limpieza + app',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona húmeda',min:40,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona seca',min:40,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona envasado',min:40,pref:['rodrigo'],alt:[],p:'verde'},
+{t:'Marmita y tanque frío',min:60,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Secado',min:60,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Medición humedad grillo entero',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Medición humedad tamizado',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Registros limpieza + app',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona húmeda',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona seca',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona envasado',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
 {t:'Tamizar (3:30h)',min:198,pref:['begona','rodrigo'],alt:[],p:'azul'},
 {t:'Preparación pedidos',min:60,pref:['rodrigo'],alt:[],p:'azul'},
 ]},
@@ -136,18 +140,18 @@ const H={
 {t:'Lavar material aguas + llenar botellas',min:180,pref:['emmanuel'],alt:[],p:'azul'},
 {t:'Limpiar zona frass y maquinaria clima',min:120,pref:['emmanuel'],alt:[],p:'azul'},
 ],incubacion:[
-{t:'Todo incubación (8h)',min:480,pref:['marina'],alt:[],p:'verde'},
+{t:'Recoger sustratos',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Preparar sustratos cajitas',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Recolecta minigrillos',min:90,pref:['marina'],alt:[],p:'verde'},{t:'Preparar sustrato coco',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Limpiar tuppers y platos',min:40,pref:['marina'],alt:[],p:'verde'},{t:'Limpiar zona incubación',min:60,pref:['marina'],alt:[],p:'azul'},{t:'Registrar en app',min:15,pref:['marina'],alt:[],p:'verde'},{t:'Registros limpieza',min:15,pref:['marina'],alt:[],p:'verde'},
 {t:'Preparar cajas comida (incl. agua)',min:78,pref:['begona'],alt:[],p:'verde'},
 {t:'Agua aspersor grillos pequeños',min:30,pref:['begona'],alt:[],p:'verde'},
 ],obrador:[
-{t:'Marmita y tanque frío',min:60,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Secado',min:60,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Medición humedad grillo entero',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Medición humedad tamizado',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Registros limpieza + app',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona húmeda',min:40,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona seca',min:40,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona envasado',min:40,pref:['rodrigo'],alt:[],p:'verde'},
+{t:'Marmita y tanque frío',min:60,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Secado',min:60,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Medición humedad grillo entero',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Medición humedad tamizado',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Registros limpieza + app',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona húmeda',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona seca',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona envasado',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
 {t:'Tamizar (4h)',min:240,pref:['begona','rodrigo'],alt:[],p:'azul'},
 ]},
 4:{nota:'',granja:[
@@ -165,18 +169,18 @@ const H={
 {t:'Dar comida (2h)',min:120,pref:['emmanuel'],alt:[],p:'verde'},
 {t:'Registros de limpieza',min:15,pref:['napoleon','emmanuel','zakaria','damia'],alt:[],p:'verde'},
 ],incubacion:[
-{t:'Todo incubación (8h)',min:480,pref:['marina'],alt:[],p:'verde'},
+{t:'Recoger sustratos',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Preparar sustratos cajitas',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Recolecta minigrillos',min:90,pref:['marina'],alt:[],p:'verde'},{t:'Preparar sustrato coco',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Limpiar tuppers y platos',min:40,pref:['marina'],alt:[],p:'verde'},{t:'Limpiar zona incubación',min:60,pref:['marina'],alt:[],p:'azul'},{t:'Registrar en app',min:15,pref:['marina'],alt:[],p:'verde'},{t:'Registros limpieza',min:15,pref:['marina'],alt:[],p:'verde'},
 {t:'Preparar cajas comida (incl. agua)',min:78,pref:['begona'],alt:[],p:'verde'},
 {t:'Agua aspersor grillos pequeños',min:30,pref:['begona'],alt:[],p:'verde'},
 ],obrador:[
-{t:'Marmita y tanque frío',min:60,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Secado',min:60,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Medición humedad grillo entero',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Medición humedad tamizado',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Registros limpieza + app',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona húmeda',min:40,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona seca',min:40,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona envasado',min:40,pref:['rodrigo'],alt:[],p:'verde'},
+{t:'Marmita y tanque frío',min:60,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Secado',min:60,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Medición humedad grillo entero',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Medición humedad tamizado',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Registros limpieza + app',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona húmeda',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona seca',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona envasado',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
 {t:'Tamizar (3h)',min:180,pref:['begona','rodrigo'],alt:[],p:'azul'},
 ]},
 5:{nota:'',granja:[
@@ -196,18 +200,18 @@ const H={
 {t:'Limpiar zona limpieza y pasillos',min:60,pref:['ali'],alt:[],p:'azul'},
 {t:'Registros de limpieza',min:15,pref:['napoleon','emmanuel','zakaria','ali','damia'],alt:[],p:'verde'},
 ],incubacion:[
-{t:'Todo incubación (8h)',min:480,pref:['marina'],alt:[],p:'verde'},
+{t:'Recoger sustratos',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Preparar sustratos cajitas',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Recolecta minigrillos',min:90,pref:['marina'],alt:[],p:'verde'},{t:'Preparar sustrato coco',min:60,pref:['marina'],alt:[],p:'verde'},{t:'Limpiar tuppers y platos',min:40,pref:['marina'],alt:[],p:'verde'},{t:'Limpiar zona incubación',min:60,pref:['marina'],alt:[],p:'azul'},{t:'Registrar en app',min:15,pref:['marina'],alt:[],p:'verde'},{t:'Registros limpieza',min:15,pref:['marina'],alt:[],p:'verde'},
 {t:'Preparar cajas comida (3h)',min:180,pref:['begona'],alt:[],p:'verde'},
 {t:'Agua aspersor grillos pequeños',min:30,pref:['begona'],alt:[],p:'verde'},
 ],obrador:[
-{t:'Marmita y tanque frío',min:60,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Secado',min:60,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Medición humedad grillo entero',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Medición humedad tamizado',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Registros limpieza + app',min:30,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona húmeda',min:40,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona seca',min:40,pref:['rodrigo'],alt:[],p:'verde'},
-{t:'Limpieza zona envasado',min:40,pref:['rodrigo'],alt:[],p:'verde'},
+{t:'Marmita y tanque frío',min:60,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Secado',min:60,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Medición humedad grillo entero',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Medición humedad tamizado',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Registros limpieza + app',min:30,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona húmeda',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona seca',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
+{t:'Limpieza zona envasado',min:40,pref:['rodrigo'],alt:['begona','juliana'],p:'verde'},
 {t:'Tamizar (4h)',min:240,pref:['begona','rodrigo'],alt:[],p:'azul'},
 ]},
 6:{nota:'Fin de semana',granja:[
@@ -219,7 +223,7 @@ const H={
 {t:'Quitar comida',min:60,pref:['emmanuel','ali'],alt:[],p:'verde'},
 {t:'Limpiar estanterías',min:120,pref:['emmanuel','ali'],alt:[],p:'azul'},
 ],incubacion:[
-{t:'Todo incubación (8h)',min:480,pref:['zakaria'],alt:[],p:'verde'},
+{t:'Recoger sustratos',min:60,pref:['zakaria'],alt:[],p:'verde'},{t:'Preparar sustratos cajitas',min:60,pref:['zakaria'],alt:[],p:'verde'},{t:'Recolecta minigrillos',min:90,pref:['zakaria'],alt:[],p:'verde'},{t:'Preparar sustrato coco',min:60,pref:['zakaria'],alt:[],p:'verde'},{t:'Limpiar tuppers y platos',min:40,pref:['zakaria'],alt:[],p:'verde'},{t:'Limpiar zona incubación',min:60,pref:['zakaria'],alt:[],p:'azul'},{t:'Registrar en app',min:15,pref:['zakaria'],alt:[],p:'verde'},{t:'Registros limpieza',min:15,pref:['zakaria'],alt:[],p:'verde'},
 {t:'Preparar cajas comida',min:60,pref:['ali'],alt:[],p:'verde'},
 {t:'Agua aspersor grillos pequeños',min:30,pref:['ali'],alt:[],p:'verde'},
 ],obrador:[]},
@@ -230,7 +234,7 @@ const H={
 {t:'Cortar cartones',min:30,pref:['ali'],alt:[],p:'verde'},
 {t:'Lavar cajas de incubación',min:40,pref:['ali'],alt:[],p:'verde'},
 ],incubacion:[
-{t:'Todo incubación (8h)',min:480,pref:['zakaria'],alt:[],p:'verde'},
+{t:'Recoger sustratos',min:60,pref:['zakaria'],alt:[],p:'verde'},{t:'Preparar sustratos cajitas',min:60,pref:['zakaria'],alt:[],p:'verde'},{t:'Recolecta minigrillos',min:90,pref:['zakaria'],alt:[],p:'verde'},{t:'Preparar sustrato coco',min:60,pref:['zakaria'],alt:[],p:'verde'},{t:'Limpiar tuppers y platos',min:40,pref:['zakaria'],alt:[],p:'verde'},{t:'Limpiar zona incubación',min:60,pref:['zakaria'],alt:[],p:'azul'},{t:'Registrar en app',min:15,pref:['zakaria'],alt:[],p:'verde'},{t:'Registros limpieza',min:15,pref:['zakaria'],alt:[],p:'verde'},
 {t:'Preparar cajas comida',min:60,pref:['ali'],alt:[],p:'verde'},
 {t:'Agua aspersor grillos pequeños',min:30,pref:['ali'],alt:[],p:'verde'},
 ],obrador:[]},
@@ -289,6 +293,27 @@ function asignarTareas(){
         });
       }else{
         asignados.forEach(wid=>{if(asig[wid])asig[wid][task.p].push({n:task.t+(task.pref.length>1&&asignados.length>1?' ★':''),tiempo})});
+      // Si nadie fue asignado, buscar reemplazos
+      if(asignados.length===0){
+        // Cajas: cualquier disponible en granja
+        if(task.t.includes('cajas')||task.t.includes('cartones')||task.t.includes('Hacer')){
+          const bk=Object.keys(p).filter(id=>p[id].areaHoy==='granja'&&W[id].rol!=='cartones');
+          if(bk.length>0&&asig[bk[0]])asig[bk[0]][task.p].push({n:task.t+' (reemplazo)',tiempo});
+        }
+        // Obrador: Begoña > Juliana > congelar
+        if(area==='obrador'){
+          if(p.begona&&asig.begona)asig.begona[task.p].push({n:task.t+' (reemplazo Rodrigo)',tiempo});
+          else if(p.juliana&&asig.juliana)asig.juliana[task.p].push({n:task.t+' (reemplazo)',tiempo});
+        }
+        // Incubación: Zakaria (Mi-Vi) o Ali (L-Ma)
+        if(area==='incubacion'){
+          const dw=new Date().getDay();
+          if(dw>=3&&dw<=5&&p.zakaria&&asig.zakaria)asig.zakaria[task.p].push({n:task.t+' (reemplazo)',tiempo});
+          else if((dw===1||dw===2)&&p.ali&&asig.ali)asig.ali[task.p].push({n:task.t+' (reemplazo)',tiempo});
+          else if(p.zakaria&&asig.zakaria)asig.zakaria[task.p].push({n:task.t+' (reemplazo)',tiempo});
+          else if(p.ali&&asig.ali)asig.ali[task.p].push({n:task.t+' (reemplazo)',tiempo});
+        }
+      };
       }
     });
   });
@@ -360,11 +385,28 @@ async function renderDash(){const p=presentes();document.getElementById('st-pres
 
 async function renderAlertas(){const al=[];const p=presentes(),np=Object.keys(p).length;const sched=H[DOW];if(sched?.nota)al.push({t:'warn',m:sched.nota});if(np<=2)al.push({t:'danger',m:`⚠️ Solo ${np} personas.`});if(DOW===0||DOW===6)al.push({t:'warn',m:'📅 Fin de semana.'});if(DOW===1)al.push({t:'info',m:'📦 Lunes: posible acumulación.'});if(ausentes.size>0)al.push({t:'warn',m:`👤 Ausentes: ${[...ausentes].map(id=>W[id]?.n).join(', ')}`});const pend=cajasData.filter(c=>c.estado==='activa'&&c.fecha_colecta&&new Date(c.fecha_colecta)<new Date());if(pend.length>MAX_COL)al.push({t:'warn',m:`📦 ${pend.length} pendientes. Máx ${MAX_COL}/día.`});if(pend.length>0)al.push({t:'danger',m:`📦 ${pend.length} cajas VENCIDAS: ${pend.slice(0,5).map(c=>c.codigo||c.id).join(', ')}${pend.length>5?'...':''}`});const ult=tempsData.length?tempsData[tempsData.length-1]:null;if(ult){if(ult.temp_incubacion>32)al.push({t:'danger',m:`🌡️ Incub. ALTA: ${ult.temp_incubacion}°C`});if(ult.temp_incubacion<28)al.push({t:'danger',m:`🌡️ Incub. BAJA: ${ult.temp_incubacion}°C`})}getAlertas().filter(a=>a.fecha===HOY||a.fecha===new Date().toLocaleDateString('en-CA')).forEach(a=>{const cfg=CC[msUser]||{area:'todas'};if(a.area==='todas'||a.area===cfg.area||cfg.area==='todas')al.push({t:a.tipo,m:'📢 '+a.msg})});if(!al.length)al.push({t:'ok',m:'✅ Todo en orden.'});document.getElementById('lst-alertas').innerHTML=al.map(a=>`<div class="alert alert-${a.t}">${a.m}</div>`).join('')}
 
-function mostrarSeleccion(){document.getElementById('auth-screen').style.display='none';document.getElementById('app').style.display='none';document.getElementById('select-worker').style.display='block';document.getElementById('tu2').textContent=msUser;const config=CC[msUser]||{rol:'area',area:'granja',label:'Granja'};const admin=config.rol==='admin';let ac=config.area==='granja'?'area-granja':config.area==='incubacion'?'area-incubacion':config.area==='obrador'?'area-obrador':'area-admin';document.getElementById('area-label').innerHTML=`<span class="area-badge ${ac}">${admin?'👑 Administrador':'📍 '+config.label}</span><br>Selecciona tu nombre`;let html='';for(const[id,w]of Object.entries(W)){let aH=w.a;if(w.d2&&w.d2.includes(DOW))aH=w.a2;const th=w.d.includes(DOW);if(!admin&&aH!==config.area)continue;html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('${id}')" style="${!th?'opacity:.4':''}"><div class="emoji">${w.emoji}</div><div class="wname">${w.n}</div><div class="warea">${aH}${!th?' (no trabaja hoy)':''}</div></div>`}if(admin)html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('admin')" style="border-color:var(--purple)"><div class="emoji">👑</div><div class="wname">Ver todo</div><div class="warea">Administrador</div></div>`;document.getElementById('worker-select').innerHTML=html}
+function mostrarSeleccion(){document.getElementById('auth-screen').style.display='none';document.getElementById('app').style.display='none';document.getElementById('select-worker').style.display='block';document.getElementById('tu2').textContent=msUser;const config=CC[msUser]||{rol:'area',area:'granja',label:'Granja'};const admin=config.rol==='admin';let ac=config.area==='granja'?'area-granja':config.area==='incubacion'?'area-incubacion':config.area==='obrador'?'area-obrador':'area-admin';document.getElementById('area-label').innerHTML=`<span class="area-badge ${ac}">${admin?'👑 Administrador':'📍 '+config.label}</span><br>Selecciona tu nombre`;let html='';for(const[id,w]of Object.entries(W)){if(id==='juliana')continue;let aH=w.a;if(w.d2&&w.d2.includes(DOW))aH=w.a2;const th=w.d.includes(DOW);if(!admin&&aH!==config.area)continue;html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('${id}')" style="${!th?'opacity:.4':''}"><div class="emoji">${w.emoji}</div><div class="wname">${w.n}</div><div class="warea">${aH}${!th?' (no trabaja hoy)':''}</div></div>`}if(admin)html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('admin')" style="border-color:var(--purple)"><div class="emoji">👑</div><div class="wname">Ver todo</div><div class="warea">Administrador</div></div>`;document.getElementById('worker-select').innerHTML=html}
 function seleccionarTrabajador(id){const pin=prompt('Ingresa tu PIN (4 dígitos):');if(!pin)return;if(pin!==PINES[id]){alert('PIN incorrecto');return;}selectedWorker=id;localStorage.setItem('gt_worker',id);document.getElementById('select-worker').style.display='none';mostrarApp()}
 function cambiarTrabajador(){localStorage.removeItem('gt_worker');selectedWorker=null;iaOverride=null;mostrarSeleccion()}
-function renderTabs(){const admin=esAdmin();let tabs=[{id:'mis-tareas',icon:'📋',label:'Mis tareas'},{id:'alertas',icon:'⚠️',label:'Alertas'}];if(admin)tabs=[{id:'mis-tareas',icon:'📋',label:'Mis tareas'},{id:'dashboard',icon:'📊',label:'Dashboard'},{id:'historial',icon:'📜',label:'Historial'},{id:'equipo',icon:'👥',label:'Equipo'},{id:'alertas',icon:'⚠️',label:'Alertas'}];document.getElementById('tabs-bar').innerHTML=tabs.map((t,i)=>`<div class="tab ${i===0?'active':''}" onclick="showSection('${t.id}',this)">${t.icon} ${t.label}</div>`).join('')}
-function showSection(id,el){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='dashboard')renderDash();if(id==='alertas')renderAlertas();if(id==='equipo')renderEquipo();if(id==='historial'){document.getElementById('hist-worker').innerHTML='<option value="">Selecciona...</option>'+Object.entries(W).map(([id,w])=>`<option value="${id}">${w.emoji} ${w.n}</option>`).join('');renderHistorial()}}
+
+function renderHistTareas(){
+  const h=getHist();const hoy=Object.values(h).filter(e=>e.fecha===HOY);
+  if(!hoy.length){document.getElementById('ht-content').innerHTML='<p style="color:var(--ink3)">No hay tareas registradas hoy</p>';return;}
+  let html='<table style="width:100%;border-collapse:collapse;font-size:11px"><tr style="background:var(--ink);color:#fff"><th style="padding:5px;border:1px solid #ddd">Trabajador</th><th style="padding:5px;border:1px solid #ddd">Tarea</th><th style="padding:5px;border:1px solid #ddd">Estado</th><th style="padding:5px;border:1px solid #ddd">Hora</th><th style="padding:5px;border:1px solid #ddd">Observaciones</th></tr>';
+  hoy.forEach(entry=>{
+    for(const[task,info]of Object.entries(entry.tareas)){
+      html+=`<tr><td style="padding:4px;border:1px solid #ddd;font-weight:600">${entry.nombre}</td><td style="padding:4px;border:1px solid #ddd">${task}</td><td style="padding:4px;border:1px solid #ddd;text-align:center;background:${info.done?'#C8E6C9':'#FFCDD2'}">${info.done?'✅ Hecha':'❌ Pendiente'}</td><td style="padding:4px;border:1px solid #ddd;font-family:monospace">${info.hora||'—'}</td><td style="padding:4px;border:1px solid #ddd;color:var(--ink3);font-style:italic">${info.obs||'—'}</td></tr>`;
+    }
+  });
+  html+='</table>';
+  // Stats
+  let total=0,done=0;hoy.forEach(e=>{for(const i of Object.values(e.tareas)){total++;if(i.done)done++;}});
+  html=`<div class="stats-grid" style="margin-bottom:10px"><div class="stat"><div class="stat-value" style="font-size:20px">${total}</div><div class="stat-label">Tareas registradas</div></div><div class="stat"><div class="stat-value" style="font-size:20px;color:var(--ok)">${done}</div><div class="stat-label">Completadas</div></div><div class="stat"><div class="stat-value" style="font-size:20px;color:var(--danger)">${total-done}</div><div class="stat-label">Pendientes</div></div><div class="stat"><div class="stat-value" style="font-size:20px">${total>0?Math.round(done/total*100):0}%</div><div class="stat-label">Avance</div></div></div>`+html;
+  document.getElementById('ht-content').innerHTML=html;
+}
+
+function renderTabs(){let tabs=[{id:'mis-tareas',icon:'📋',label:'Mis tareas'},{id:'alertas',icon:'⚠️',label:'Alertas'}];if(selectedWorker==='admin')tabs=[{id:'mis-tareas',icon:'📋',label:'Mis tareas'},{id:'dashboard',icon:'📊',label:'Dashboard'},{id:'historial',icon:'📜',label:'Historial'},{id:'hist-tareas',icon:'📊',label:'Tareas del día'},{id:'equipo',icon:'👥',label:'Equipo'},{id:'alertas',icon:'⚠️',label:'Alertas'}];document.getElementById('tabs-bar').innerHTML=tabs.map((t,i)=>`<div class="tab ${i===0?'active':''}" onclick="showSection('${t.id}',this)">${t.icon} ${t.label}</div>`).join('')}
+function showSection(id,el){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='dashboard')renderDash();if(id==='alertas')renderAlertas();if(id==='equipo')renderEquipo();if(id==='hist-tareas'){renderHistTareas();}if(id==='historial'){document.getElementById('hist-worker').innerHTML='<option value="">Selecciona...</option>'+Object.entries(W).map(([id,w])=>`<option value="${id}">${w.emoji} ${w.n}</option>`).join('');renderHistorial()}}
 async function loadData(){cajasData=await sbRPC('cajas');tempsData=await sbRPC('temperaturas')}
 function renderAll(){document.getElementById('hoy-fecha').textContent=DIAS[DOW]+' '+new Date().toLocaleDateString('es-ES');const w=W[selectedWorker];document.getElementById('worker-badge').textContent=selectedWorker==='admin'?'👑 Admin':w?w.emoji+' '+w.n:'';renderTabs();renderTareas()}
 async function mostrarApp(){document.getElementById('auth-screen').style.display='none';document.getElementById('select-worker').style.display='none';document.getElementById('app').style.display='block';await loadData();renderAll()}
