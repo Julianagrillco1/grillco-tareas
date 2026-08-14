@@ -351,10 +351,28 @@ async function recalcularConIA(){
 
 // RENDER
 function renderTarea(tarea,prio,wid){
-  const nombre=typeof tarea==='object'?tarea.n:tarea;const tiempo=typeof tarea==='object'?tarea.tiempo:'';
-  const isReasig=typeof tarea==='object'&&tarea.reasignado;const yellowStyle=isReasig?'background:#FFF176;border-left:4px solid #FF9800':'';
-const cleanNombre=nombre.includes(': ')?nombre.split(': ').slice(1).join(': '):nombre;const id='t-'+cleanNombre.replace(/\W/g,'').substring(0,30);const done=localStorage.getItem(id)==='1';
-  return`<div class="task-item ${isReasig?'reasignado':prio} ${done?'done':''}" style="${yellowStyle}"><div class="task-check ${done?'checked':''}" onclick="toggleT('${id}','${nombre.replace(/'/g,"\\'")}','${wid||''}')">${done?'✓':''}</div><div class="task-info"><div class="task-name">${nombre}${isReasig?'<span style="background:#FF9800;color:#fff;padding:1px 6px;border-radius:4px;font-size:9px;margin-left:6px">REASIGNADO</span>':''}</div>${tiempo?`<div class="task-time">⏱ ${tiempo}</div>`:''}<textarea class="task-obs" placeholder="Observaciones..." rows="1" onchange="saveObs('${id}','${nombre.replace(/'/g,"\\'")}','${wid||''}',this.value)">${localStorage.getItem('obs-'+id)||''}</textarea>${(nombre.includes('agua')||nombre.includes('Agua')||nombre.includes('comida')||nombre.includes('Comida')||nombre.includes('estantería')||nombre.includes('Estantería')||nombre.includes('minigrillos')||nombre.includes('Minigrillos'))?`<div style="margin-top:4px;display:flex;gap:4px;align-items:center"><span style="font-size:10px;color:var(--purple);white-space:nowrap">📍 Me quedé en:</span><input type="text" placeholder="Ej: H1H" style="flex:1;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:inherit" value="${localStorage.getItem('quede-'+id)||''}" onchange="guardarQuede('${id}','${nombre.replace(/'/g,"\\'")}',this.value)"></div>`:''}</div></div>`}
+  var nombre=typeof tarea==='object'?tarea.n:tarea;
+  var tiempo=typeof tarea==='object'?tarea.tiempo:'';
+  var isR=typeof tarea==='object'&&tarea.reasignado;
+  var cn=nombre.includes(': ')?nombre.split(': ').slice(1).join(': '):nombre;
+  var id='t-'+cn.replace(/\W/g,'').substring(0,30);
+  var done=localStorage.getItem(id)==='1';
+  var ne=nombre.replace(/'/g,"\\'");
+  var sty=isR?'background:#FFF176;border-left:4px solid #FF9800':'';
+  var cls=isR?'reasignado':prio;
+  var badge=isR?'<span style="background:#FF9800;color:#fff;padding:1px 6px;border-radius:4px;font-size:9px;margin-left:6px">REASIGNADO</span>':'';
+  var timeH=tiempo?'<div class="task-time">⏱ '+tiempo+'</div>':'';
+  var obsVal=localStorage.getItem('obs-'+id)||'';
+  var needQuede=nombre.match(/agua|Agua|comida|Comida|estanter|Estanter|minigrillos|Minigrillos/);
+  var quedeVal=localStorage.getItem('quede-'+id)||'';
+  var quedeH=needQuede?'<div style="margin-top:4px;display:flex;gap:4px;align-items:center"><span style="font-size:10px;color:var(--purple);white-space:nowrap">📍 Me quedé en:</span><input type="text" placeholder="Ej: H1H" style="flex:1;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:inherit" value="'+quedeVal+'" onchange="guardarQuede(\''+id+'\',\''+ne+'\',this.value)"></div>':'';
+  var h='<div class="task-item '+cls+(done?' done':'')+'" style="'+sty+'">';
+  h+='<div class="task-check'+(done?' checked':'')+'" onclick="toggleT(\''+id+'\',\''+ne+'\',\''+( wid||'')+'\')">'+(done?'✓':'')+'</div>';
+  h+='<div class="task-info"><div class="task-name">'+nombre+badge+'</div>'+timeH;
+  h+='<textarea class="task-obs" placeholder="Observaciones..." rows="1" onchange="saveObs(\''+id+'\',\''+ne+'\',\''+(wid||'')+'\',this.value)">'+obsVal+'</textarea>';
+  h+=quedeH+'</div></div>';
+  return h;
+}
 function toggleT(id,tn,wid){const nv=localStorage.getItem(id)==='1'?'0':'1';localStorage.setItem(id,nv);
   // Save history to ALL workers who have this task
   const asig=asignarTareas();
