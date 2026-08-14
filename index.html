@@ -59,7 +59,7 @@ let msUser=null,ausentes=new Set(),selectedWorker=null,cajasData=[],tempsData=[]
 const MAX_COL=14;
 const PINES={napoleon:'1111',zakaria:'2222',marina:'3333',damia:'4444',begona:'5555',ali:'6666',emmanuel:'7777',rodrigo:'8888',admin:'0000'};
 
-const CC={'ramirez@grillco.cat':{rol:'admin',area:'todas',label:'Administrador'},'villasante@grillco.cat':{rol:'area',area:'incubacion',label:'Incubación'},'barnat@grillco.cat':{rol:'area',area:'granja',label:'Granja'},'info@grillco.cat':{rol:'area',area:'obrador',label:'Obrador'}};
+const CC={'ramirez@grillco.cat':{rol:'admin',area:'todas',label:'Administrador'},'villasante@grillco.cat':{rol:'admin',area:'todas',label:'Administrador'},'monter@grillco.cat':{rol:'admin',area:'todas',label:'Administrador'},'barnat@grillco.cat':{rol:'area',area:'granja',label:'Granja'},'info@grillco.cat':{rol:'area',area:'obrador',label:'Obrador'},'granjagrillco@outlook.es':{rol:'area',area:'granja',label:'Granja'},'incubaciongrillco@outlook.es':{rol:'area',area:'incubacion',label:'Incubación'},'obradorgrillco@outlook.es':{rol:'area',area:'obrador',label:'Obrador'}};
 const W={napoleon:{n:'Napoleón',a:'granja',d:[1,2,3,4,5],emoji:'👷'},zakaria:{n:'Zakaria',a:'granja',d:[3,4,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷‍♂️'},marina:{n:'Marina',a:'incubacion',d:[1,2,3,4,5],emoji:'👩‍🔬'},damia:{n:'Damia',a:'granja',d:[1,2,3,4,5],emoji:'📦',rol:'cartones'},begona:{n:'Begoña',a:'incubacion',d:[1,2,3,4,5],a2:'obrador',d2:[2,3,4,5],emoji:'👩‍🔬'},ali:{n:'Ali',a:'granja',d:[1,2,5,6,0],a2:'incubacion',d2:[6,0],emoji:'👷'},emmanuel:{n:'Emmanuel',a:'granja',d:[2,3,4,5,6],emoji:'👷'},rodrigo:{n:'Rodrigo',a:'obrador',d:[1,2,3,4,5],emoji:'⚙️'},juliana:{n:'Juliana',a:'admin',d:[1,2,3,4,5],emoji:'👩‍💼',rol:'backup_obrador'}};
 
 // HORARIO EXACTO DEL EXCEL — pref=preferidos(negrita), alt=alternativos
@@ -245,7 +245,7 @@ const SEMANA=Math.ceil((new Date()-new Date(new Date().getFullYear(),0,1))/60480
 const ES_PAR=SEMANA%2===0;
 
 // AUTH
-function _rnd(n){const a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a,b=>('0'+b.toString(16)).slice(-2)).join('')}async function _sha(s){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))}function _b64(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}async function signIn(){const v=_rnd(32),c=_b64(await _sha(v)),s=_rnd(8);localStorage.setItem('gt_pv',v);localStorage.setItem('gt_st',s);location.href=AUTH_URL+'?'+new URLSearchParams({client_id:CLIENT_ID,response_type:'code',redirect_uri:REDIRECT,scope:'User.Read',state:s,code_challenge:c,code_challenge_method:'S256',prompt:'select_account'})}async function handleRedirect(){const p=new URLSearchParams(location.search),code=p.get('code');if(p.get('error')){showAuthErr(p.get('error_description'));return!1}if(!code)return!1;if(p.get('state')!==localStorage.getItem('gt_st')){showAuthErr('Error seguridad');return!1}const v=localStorage.getItem('gt_pv');if(!v){showAuthErr('Verifier perdido');return!1}try{const r=await fetch(TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:CLIENT_ID,grant_type:'authorization_code',code,redirect_uri:REDIRECT,code_verifier:v}).toString()});const d=await r.json();if(!d.access_token){showAuthErr(d.error_description||'Error');return!1}const u=await(await fetch('https://graph.microsoft.com/v1.0/me',{headers:{Authorization:'Bearer '+d.access_token}})).json();const e=(u.userPrincipalName||u.mail||'').toLowerCase();if(!e.endsWith('@grillco.cat')){showAuthErr('Solo @grillco.cat');return!1}msUser=e;localStorage.setItem('gt_user',e);history.replaceState({},'',REDIRECT);localStorage.removeItem('gt_pv');localStorage.removeItem('gt_st');return!0}catch(e){showAuthErr(e.message);return!1}}function showAuthErr(m){document.getElementById('auth-err').textContent=m;document.getElementById('auth-err').style.display='block'}function logout(){localStorage.removeItem('gt_user');localStorage.removeItem('gt_worker');location.href=REDIRECT}
+function _rnd(n){const a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a,b=>('0'+b.toString(16)).slice(-2)).join('')}async function _sha(s){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))}function _b64(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}async function signIn(){const v=_rnd(32),c=_b64(await _sha(v)),s=_rnd(8);localStorage.setItem('gt_pv',v);localStorage.setItem('gt_st',s);location.href=AUTH_URL+'?'+new URLSearchParams({client_id:CLIENT_ID,response_type:'code',redirect_uri:REDIRECT,scope:'User.Read',state:s,code_challenge:c,code_challenge_method:'S256',prompt:'select_account'})}async function handleRedirect(){const p=new URLSearchParams(location.search),code=p.get('code');if(p.get('error')){showAuthErr(p.get('error_description'));return!1}if(!code)return!1;if(p.get('state')!==localStorage.getItem('gt_st')){showAuthErr('Error seguridad');return!1}const v=localStorage.getItem('gt_pv');if(!v){showAuthErr('Verifier perdido');return!1}try{const r=await fetch(TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:CLIENT_ID,grant_type:'authorization_code',code,redirect_uri:REDIRECT,code_verifier:v}).toString()});const d=await r.json();if(!d.access_token){showAuthErr(d.error_description||'Error');return!1}const u=await(await fetch('https://graph.microsoft.com/v1.0/me',{headers:{Authorization:'Bearer '+d.access_token}})).json();const e=(u.userPrincipalName||u.mail||'').toLowerCase();if(!e.endsWith('@grillco.cat')&&!e.endsWith('@outlook.es')){showAuthErr('Acceso denegado');return!1}msUser=e;localStorage.setItem('gt_user',e);history.replaceState({},'',REDIRECT);localStorage.removeItem('gt_pv');localStorage.removeItem('gt_st');return!0}catch(e){showAuthErr(e.message);return!1}}function showAuthErr(m){document.getElementById('auth-err').textContent=m;document.getElementById('auth-err').style.display='block'}function logout(){localStorage.removeItem('gt_user');localStorage.removeItem('gt_worker');location.href=REDIRECT}
 
 // SUPABASE + ALERTAS + HISTORIAL
 async function sbRPC(fn){try{const r=await fetch(`${SB_URL}/rest/v1/rpc/powerbi_${fn}`,{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_token:PB_TOKEN})});const d=await r.json();return Array.isArray(d)?d:[]}catch(e){return[]}}
@@ -299,17 +299,12 @@ function asignarTareas(){
         if(frassWorker&&asig[frassWorker])asig[frassWorker][task.p].push({n:task.t,tiempo});
       }else{
         asignados.forEach(wid=>{if(asig[wid])asig[wid][task.p].push({n:task.t+(task.pref.length>1&&asignados.length>1?' ★':''),tiempo})});
-      // Si nadie fue asignado, REASIGNAR en amarillo
+      // Si nadie fue asignado, REASIGNAR en amarillo a cualquier disponible del área
       if(asignados.length===0){
         let reasignado=false;
-        // Granja: cajas, cartones, cualquier tarea
-        if(area==='granja'){
-          const bk=Object.keys(p).filter(id=>p[id].areaHoy==='granja'&&id!=='damia');
-          if(bk.length>0){const wid=bk[Math.floor(Math.random()*bk.length)];if(asig[wid]){asig[wid].verde.push({n:'⚠️ '+task.t+' (REASIGNADO)',tiempo,reasignado:true});reasignado=true;}}
-        }
-        // Obrador: Begoña > Juliana > congelar
-        if(area==='obrador'&&!reasignado){
-          if(p.begona&&asig.begona){asig.begona.verde.push({n:'⚠️ '+task.t+' (REASIGNADO - cubre Rodrigo)',tiempo,reasignado:true});reasignado=true;}
+        // Obrador: cadena Begoña > Juliana > congelar
+        if(area==='obrador'){
+          if(p.begona&&asig.begona){asig.begona.verde.push({n:'⚠️ '+task.t+' (REASIGNADO)',tiempo,reasignado:true});reasignado=true;}
           else if(p.juliana&&asig.juliana){asig.juliana.verde.push({n:'⚠️ '+task.t+' (REASIGNADO)',tiempo,reasignado:true});reasignado=true;}
         }
         // Incubación: Zakaria (Mi-Vi) o Ali (L-Ma)
@@ -319,6 +314,14 @@ function asignarTareas(){
           else if((dw===1||dw===2)&&p.ali&&asig.ali){asig.ali.verde.push({n:'⚠️ '+task.t+' (REASIGNADO)',tiempo,reasignado:true});reasignado=true;}
           else if(p.zakaria&&asig.zakaria){asig.zakaria.verde.push({n:'⚠️ '+task.t+' (REASIGNADO)',tiempo,reasignado:true});reasignado=true;}
           else if(p.ali&&asig.ali){asig.ali.verde.push({n:'⚠️ '+task.t+' (REASIGNADO)',tiempo,reasignado:true});reasignado=true;}
+        }
+        // Granja: buscar CUALQUIER disponible (no solo cajas)
+        if(area==='granja'&&!reasignado){
+          const bk=Object.keys(p).filter(id=>p[id].areaHoy==='granja');
+          // Buscar el que tenga menos tareas
+          let minT=999,best=null;
+          bk.forEach(id=>{const total=(asig[id]?.verde?.length||0)+(asig[id]?.azul?.length||0);if(total<minT){minT=total;best=id;}});
+          if(best&&asig[best]){asig[best].verde.push({n:'⚠️ '+task.t+' (REASIGNADO)',tiempo,reasignado:true});reasignado=true;}
         }
       };
       }
@@ -346,14 +349,36 @@ function renderTarea(tarea,prio,wid){
   const nombre=typeof tarea==='object'?tarea.n:tarea;const tiempo=typeof tarea==='object'?tarea.tiempo:'';
   const isReasig=typeof tarea==='object'&&tarea.reasignado;const esColecta=nombre.includes('Colectar caja');const wk=esColecta?'colecta':(wid||selectedWorker||'x');const id='t-'+wk+'-'+nombre.replace(/\W/g,'').substring(0,25);const done=localStorage.getItem(id)==='1';
   return`<div class="task-item ${isReasig?'reasignado':prio} ${done?'done':''}"><div class="task-check ${done?'checked':''}" onclick="toggleT('${id}','${nombre.replace(/'/g,"\\'")}','${wid||''}')">${done?'✓':''}</div><div class="task-info"><div class="task-name">${nombre}</div>${tiempo?`<div class="task-time">⏱ ${tiempo}</div>`:''}<textarea class="task-obs" placeholder="Observaciones..." rows="1" onchange="saveObs('${id}','${nombre.replace(/'/g,"\\'")}','${wid||''}',this.value)">${localStorage.getItem('obs-'+id)||''}</textarea>${(nombre.includes('agua')||nombre.includes('Agua')||nombre.includes('comida')||nombre.includes('Comida')||nombre.includes('estantería')||nombre.includes('Estantería')||nombre.includes('minigrillos')||nombre.includes('Minigrillos'))?`<div style="margin-top:4px;display:flex;gap:4px;align-items:center"><span style="font-size:10px;color:var(--purple);white-space:nowrap">📍 Me quedé en:</span><input type="text" placeholder="Ej: H1H" style="flex:1;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:inherit" value="${localStorage.getItem('quede-'+id)||''}" onchange="guardarQuede('${id}','${nombre.replace(/'/g,"\\'")}',this.value)"></div>`:''}</div></div>`}
-function toggleT(id,tn,wid){const nv=localStorage.getItem(id)==='1'?'0':'1';localStorage.setItem(id,nv);if(wid)saveToHist(wid,tn,nv==='1',localStorage.getItem('obs-'+id)||'');renderTareas()}
+function toggleT(id,tn,wid){const nv=localStorage.getItem(id)==='1'?'0':'1';localStorage.setItem(id,nv);
+const esCol=tn.includes('Colectar caja');
+if(esCol){
+  // Save history for ALL workers assigned to colecta today
+  const asig=asignarTareas();
+  for(const[wk,a]of Object.entries(asig)){
+    const tiene=a.verde.some(t=>(typeof t==='object'?t.n:t)===tn);
+    if(tiene)saveToHist(wk,tn,nv==='1',localStorage.getItem('obs-'+id)||'');
+  }
+}else if(wid){saveToHist(wid,tn,nv==='1',localStorage.getItem('obs-'+id)||'');}
+renderTareas()}
 function saveObs(id,tn,wid,val){localStorage.setItem('obs-'+id,val);if(wid)saveToHist(wid,tn,localStorage.getItem(id)==='1',val)}
 
 function renderTareas(){
   const asig=asignarTareas();const sched=H[DOW];
   // Nota del día
   const notaBox=document.getElementById('nota-dia-box');
-  if(sched?.nota)notaBox.innerHTML=`<div class="nota-dia">${sched.nota}</div>`;else notaBox.innerHTML='';
+  let notaHTML='';
+  if(sched?.nota)notaHTML+=`<div class="nota-dia">${sched.nota}</div>`;
+  // Mostrar "continuar desde" de días anteriores
+  const quedeKeys=Object.keys(localStorage).filter(k=>k.startsWith('quede-'));
+  const continuar=[];
+  quedeKeys.forEach(k=>{const v=localStorage.getItem(k);if(v){
+    if(k.includes('agua')||k.includes('Agua'))continuar.push('💧 Aguas: continuar desde caja <strong>'+v+'</strong>');
+    else if(k.includes('comida')||k.includes('Comida'))continuar.push('🍽️ Comida: continuar desde caja <strong>'+v+'</strong>');
+    else if(k.includes('estanter'))continuar.push('📚 Estanterías: continuar desde <strong>'+v+'</strong>');
+    else if(k.includes('minigrillos')||k.includes('Minigrillos'))continuar.push('🦗 Minigrillos: continuar desde tupper <strong>'+v+'</strong>');
+  }});
+  if(continuar.length)notaHTML+=`<div style="background:var(--blue-bg);border-left:4px solid var(--blue);border-radius:8px;padding:12px;margin:8px 0;font-size:14px;color:#0D47A1">`+continuar.join('<br>')+`</div>`;
+  notaBox.innerHTML=notaHTML;
   // Alertas desplegables
   const userArea=selectedWorker==='admin'?'todas':(W[selectedWorker]?.areaHoy||W[selectedWorker]?.a||'todas');
   const prog=getAlertas().filter(a=>{const dateMatch=a.fecha===HOY||a.fecha===new Date().toLocaleDateString('en-CA');const areaMatch=a.area==='todas'||userArea==='todas'||a.area===userArea;return dateMatch&&areaMatch;});
@@ -362,9 +387,9 @@ function renderTareas(){
 
   if(selectedWorker==='admin'){
     const p=presentes(),pend=cajasData.filter(c=>c.estado==='activa'&&c.fecha_colecta&&new Date(c.fecha_colecta)<=new Date());
-    let res=`<div class="saludo-big">👑 Administrador</div>${DIAS[DOW]}: ${Object.keys(p).length} presentes · 📦 ${pend.length} cajas pendientes (máx ${MAX_COL}/día)`;
+    let totalT=0,doneT=0;for(const[wid2,a2]of Object.entries(asig)){['verde','azul','rojo'].forEach(pr=>{a2[pr].forEach(t2=>{const nm2=typeof t2==='object'?t2.n:t2;const esC2=nm2.includes('Colectar caja');const ck2=esC2?'colecta':wid2;totalT++;if(localStorage.getItem('t-'+ck2+'-'+nm2.replace(/\W/g,'').substring(0,25))==='1')doneT++;})})};let res=`<div class="saludo-big">👑 Monitor de tareas</div>${DIAS[DOW]}: ${Object.keys(p).length} presentes · 📦 ${pend.length} cajas pendientes (máx ${MAX_COL}/día)`;
     if(ausentes.size>0)res+=`<br>⚠️ Ausentes: ${[...ausentes].map(id=>W[id]?.n).join(', ')}`;
-    if(iaOverride)res+='<br>🧠 Redistribuido por IA';
+    if(iaOverride)res+='<br>🧠 Redistribuido por IA';res+=`<br>📊 Avance: <strong>${doneT}/${totalT}</strong> tareas (${totalT>0?Math.round(doneT/totalT*100):0}%)`;
     document.getElementById('ia-resumen').innerHTML=res;
     let aV=[],aA=[],aR=[];
     for(const[id,a]of Object.entries(asig)){const nm=a.w?.n||W[id]?.n||id;a.verde.forEach(t=>aV.push({t,wid:id,nm}));a.azul.forEach(t=>aA.push({t,wid:id,nm}));a.rojo.forEach(t=>aR.push({t,wid:id,nm}))}
@@ -393,45 +418,62 @@ async function renderDash(){const p=presentes();document.getElementById('st-pres
 
 async function renderAlertas(){const al=[];const p=presentes(),np=Object.keys(p).length;const sched=H[DOW];if(sched?.nota)al.push({t:'warn',m:sched.nota});if(np<=2)al.push({t:'danger',m:`⚠️ Solo ${np} personas.`});if(DOW===0||DOW===6)al.push({t:'warn',m:'📅 Fin de semana.'});if(DOW===1)al.push({t:'info',m:'📦 Lunes: posible acumulación.'});if(ausentes.size>0)al.push({t:'warn',m:`👤 Ausentes: ${[...ausentes].map(id=>W[id]?.n).join(', ')}`});const pend=cajasData.filter(c=>c.estado==='activa'&&c.fecha_colecta&&new Date(c.fecha_colecta)<new Date());if(pend.length>MAX_COL)al.push({t:'warn',m:`📦 ${pend.length} pendientes. Máx ${MAX_COL}/día.`});if(pend.length>0)al.push({t:'danger',m:`📦 ${pend.length} cajas VENCIDAS: ${pend.slice(0,5).map(c=>c.codigo||c.id).join(', ')}${pend.length>5?'...':''}`});const ult=tempsData.length?tempsData[tempsData.length-1]:null;if(ult){if(ult.temp_incubacion>32)al.push({t:'danger',m:`🌡️ Incub. ALTA: ${ult.temp_incubacion}°C`});if(ult.temp_incubacion<28)al.push({t:'danger',m:`🌡️ Incub. BAJA: ${ult.temp_incubacion}°C`})}getAlertas().filter(a=>{const dm=a.fecha===HOY||a.fecha===new Date().toLocaleDateString('en-CA');const ua2=selectedWorker==='admin'?'todas':(W[selectedWorker]?.a||'todas');const am=a.area==='todas'||ua2==='todas'||a.area===ua2;return dm&&am;}).forEach(a=>{const cfg=CC[msUser]||{area:'todas'};if(a.area==='todas'||a.area===cfg.area||cfg.area==='todas')al.push({t:a.tipo,m:'📢 '+a.msg})});if(!al.length)al.push({t:'ok',m:'✅ Todo en orden.'});document.getElementById('lst-alertas').innerHTML=al.map(a=>`<div class="alert alert-${a.t}">${a.m}</div>`).join('')}
 
-function mostrarSeleccion(){document.getElementById('auth-screen').style.display='none';document.getElementById('app').style.display='none';document.getElementById('select-worker').style.display='block';document.getElementById('tu2').textContent=msUser;const config=CC[msUser]||{rol:'area',area:'granja',label:'Granja'};const admin=config.rol==='admin';let ac=config.area==='granja'?'area-granja':config.area==='incubacion'?'area-incubacion':config.area==='obrador'?'area-obrador':'area-admin';document.getElementById('area-label').innerHTML=`<span class="area-badge ${ac}">${admin?'👑 Administrador':'📍 '+config.label}</span><br>Selecciona tu nombre`;let html='';for(const[id,w]of Object.entries(W)){if(id==='juliana')continue;let aH=w.a;if(w.d2&&w.d2.includes(DOW))aH=w.a2;const th=w.d.includes(DOW);if(!admin&&aH!==config.area)continue;html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('${id}')" style="${!th?'opacity:.4':''}"><div class="emoji">${w.emoji}</div><div class="wname">${w.n}</div><div class="warea">${aH}${!th?' (no trabaja hoy)':''}</div></div>`}if(admin)html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('admin')" style="border-color:var(--purple)"><div class="emoji">👑</div><div class="wname">Ver todo</div><div class="warea">Administrador</div></div>`;document.getElementById('worker-select').innerHTML=html}
+function mostrarSeleccion(){document.getElementById('auth-screen').style.display='none';document.getElementById('app').style.display='none';document.getElementById('select-worker').style.display='block';document.getElementById('tu2').textContent=msUser;const config=CC[msUser]||{rol:'area',area:'granja',label:'Granja'};const admin=config.rol==='admin';let ac=config.area==='granja'?'area-granja':config.area==='incubacion'?'area-incubacion':config.area==='obrador'?'area-obrador':'area-admin';document.getElementById('area-label').innerHTML=`<span class="area-badge ${ac}">${admin?'👑 Administrador':'📍 '+config.label}</span><br>Selecciona tu nombre`;let html='';for(const[id,w]of Object.entries(W)){if(id==='juliana')continue;let aH=w.a;if(w.d2&&w.d2.includes(DOW))aH=w.a2;const th=w.d.includes(DOW);const perteneceArea=w.a===config.area||w.a2===config.area||aH===config.area;if(!admin&&!perteneceArea)continue;html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('${id}')" style="${!th?'opacity:.4':''}"><div class="emoji">${w.emoji}</div><div class="wname">${w.n}</div><div class="warea">${aH}${!th?' (no trabaja hoy)':''}</div></div>`}if(admin)html+=`<div class="worker-select-btn" onclick="seleccionarTrabajador('admin')" style="border-color:var(--purple)"><div class="emoji">👑</div><div class="wname">Ver todo</div><div class="warea">Administrador</div></div>`;document.getElementById('worker-select').innerHTML=html}
 function seleccionarTrabajador(id){const pin=prompt('Ingresa tu PIN (4 dígitos):');if(!pin)return;if(pin!==PINES[id]){alert('PIN incorrecto');return;}selectedWorker=id;localStorage.setItem('gt_worker',id);document.getElementById('select-worker').style.display='none';mostrarApp()}
 function cambiarTrabajador(){localStorage.removeItem('gt_worker');selectedWorker=null;iaOverride=null;mostrarSeleccion()}
 
 function renderHistTareas(){
-  // Show ALL assigned tasks for today with real-time status
+  const el=document.getElementById('ht-content');
+  // 1. Build TODAY's tasks from current assignments
   const asig=asignarTareas();
-  let rows=[];
+  let todayRows=[];
   for(const[wid,a]of Object.entries(asig)){
     const nm=a.w?.n||W[wid]?.n||wid;
-    ['verde','azul','rojo'].forEach(prio=>{
-      a[prio].forEach(t=>{
+    ['verde','azul','rojo'].forEach(pr=>{
+      a[pr].forEach(t=>{
         const tn=typeof t==='object'?t.n:t;
-        const tid='t-'+wid+'-'+tn.replace(/\W/g,'').substring(0,25);
+        const esC=tn.includes('Colectar caja');
+        const ck=esC?'colecta':wid;
+        const tid='t-'+ck+'-'+tn.replace(/\W/g,'').substring(0,25);
         const done=localStorage.getItem(tid)==='1';
-        const hist=getHist();const hk=HOY+'_'+wid;
-        const hora=hist[hk]?.tareas?.[tn]?.hora||'—';
-        const obs=localStorage.getItem('obs-'+tid)||'—';
-        rows.push({nm,tn,done,hora,obs,prio});
+        const obsK='obs-'+tid;
+        const obs=localStorage.getItem(obsK)||'';
+        const h=getHist();const hk=HOY+'_'+wid;
+        const hora=h[hk]?.tareas?.[tn]?.hora||'—';
+        todayRows.push({nm,tn,done,hora,obs,prio:pr});
       });
     });
   }
-  if(!rows.length){document.getElementById('ht-content').innerHTML='<p style="color:var(--ink3)">No hay tareas hoy</p>';return;}
-  let html='<table style="width:100%;border-collapse:collapse;font-size:11px"><tr style="background:var(--ink);color:#fff"><th style="padding:5px;border:1px solid #ddd">Trabajador</th><th style="padding:5px;border:1px solid #ddd">Tarea</th><th style="padding:5px;border:1px solid #ddd">Estado</th><th style="padding:5px;border:1px solid #ddd">Hora</th><th style="padding:5px;border:1px solid #ddd">Observaciones</th></tr>';
-  hoy.forEach(entry=>{
-    for(const[task,info]of Object.entries(entry.tareas)){
-      html+=`<tr><td style="padding:4px;border:1px solid #ddd;font-weight:600">${entry.nombre}</td><td style="padding:4px;border:1px solid #ddd">${task}</td><td style="padding:4px;border:1px solid #ddd;text-align:center;background:${info.done?'#C8E6C9':'#FFCDD2'}">${info.done?'✅ Hecha':'❌ Pendiente'}</td><td style="padding:4px;border:1px solid #ddd;font-family:monospace">${info.hora||'—'}</td><td style="padding:4px;border:1px solid #ddd;color:var(--ink3);font-style:italic">${info.obs||'—'}</td></tr>`;
+  // Stats for today
+  const totalH=todayRows.length,doneH=todayRows.filter(r=>r.done).length;
+  let html=`<div class="stats-grid" style="margin-bottom:10px"><div class="stat"><div class="stat-value" style="font-size:20px">${totalH}</div><div class="stat-label">Total hoy</div></div><div class="stat"><div class="stat-value" style="font-size:20px;color:var(--ok)">${doneH}</div><div class="stat-label">Completadas</div></div><div class="stat"><div class="stat-value" style="font-size:20px;color:var(--danger)">${totalH-doneH}</div><div class="stat-label">Pendientes</div></div><div class="stat"><div class="stat-value" style="font-size:20px">${totalH>0?Math.round(doneH/totalH*100):0}%</div><div class="stat-label">Avance</div></div></div>`;
+  // TODAY section
+  html+=`<div class="alerta-desplegable"><div class="alerta-header" onclick="this.nextElementSibling.classList.toggle('open')" style="background:var(--ok)">📋 HOY — ${HOY} (${DIAS[DOW]}) — ${doneH}/${totalH} tareas <span>▼</span></div><div class="alerta-body open">`;
+  html+=`<table style="width:100%;border-collapse:collapse;font-size:11px"><tr style="background:var(--ink);color:#fff"><th style="padding:4px">Trabajador</th><th style="padding:4px">Tarea</th><th style="padding:4px">Estado</th><th style="padding:4px">Hora</th><th style="padding:4px">Obs</th></tr>`;
+  todayRows.forEach(r=>{html+=`<tr><td style="padding:3px;border:1px solid #ddd;font-weight:600">${r.nm}</td><td style="padding:3px;border:1px solid #ddd">${r.tn}</td><td style="padding:3px;border:1px solid #ddd;text-align:center;background:${r.done?'#C8E6C9':'#FFCDD2'}">${r.done?'✅ Hecha':'❌ Pendiente'}</td><td style="padding:3px;border:1px solid #ddd;font-family:monospace;font-size:10px">${r.hora}</td><td style="padding:3px;border:1px solid #ddd;color:var(--ink3);font-size:10px">${r.obs||'—'}</td></tr>`;});
+  html+=`</table></div></div>`;
+  // PREVIOUS DAYS from history
+  const h=getHist();
+  const days={};
+  Object.values(h).forEach(entry=>{
+    if(entry.fecha===HOY)return;
+    if(!days[entry.fecha])days[entry.fecha]={fecha:entry.fecha,tareas:[]};
+    for(const[task,info]of Object.entries(entry.tareas||{})){
+      days[entry.fecha].tareas.push({nm:entry.nombre,tn:task,done:info.done,hora:info.hora||'—',obs:info.obs||''});
     }
   });
-  html+='</table>';
-  // Stats
-  let total=0,done=0;hoy.forEach(e=>{for(const i of Object.values(e.tareas)){total++;if(i.done)done++;}});
-  html=`<div class="stats-grid" style="margin-bottom:10px"><div class="stat"><div class="stat-value" style="font-size:20px">${total}</div><div class="stat-label">Tareas registradas</div></div><div class="stat"><div class="stat-value" style="font-size:20px;color:var(--ok)">${done}</div><div class="stat-label">Completadas</div></div><div class="stat"><div class="stat-value" style="font-size:20px;color:var(--danger)">${total-done}</div><div class="stat-label">Pendientes</div></div><div class="stat"><div class="stat-value" style="font-size:20px">${total>0?Math.round(done/total*100):0}%</div><div class="stat-label">Avance</div></div></div>`+html;
-  document.getElementById('ht-content').innerHTML=html;
+  const sortedDays=Object.values(days).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  sortedDays.forEach(day=>{
+    const doneD=day.tareas.filter(r=>r.done).length;
+    const dayName=DIAS[new Date(day.fecha+'T12:00:00').getDay()];
+    html+=`<div class="alerta-desplegable"><div class="alerta-header" onclick="this.nextElementSibling.classList.toggle('open')" style="background:var(--ink3)">📅 ${day.fecha} (${dayName}) — ${doneD}/${day.tareas.length} tareas <span>▼</span></div><div class="alerta-body">`;
+    html+=`<table style="width:100%;border-collapse:collapse;font-size:11px"><tr style="background:var(--ink);color:#fff"><th style="padding:4px">Trabajador</th><th style="padding:4px">Tarea</th><th style="padding:4px">Estado</th><th style="padding:4px">Hora</th><th style="padding:4px">Obs</th></tr>`;
+    day.tareas.forEach(r=>{html+=`<tr><td style="padding:3px;border:1px solid #ddd;font-weight:600">${r.nm}</td><td style="padding:3px;border:1px solid #ddd">${r.tn}</td><td style="padding:3px;border:1px solid #ddd;text-align:center;background:${r.done?'#C8E6C9':'#FFCDD2'}">${r.done?'✅':'❌'}</td><td style="padding:3px;border:1px solid #ddd;font-family:monospace;font-size:10px">${r.hora}</td><td style="padding:3px;border:1px solid #ddd;color:var(--ink3);font-size:10px">${r.obs||'—'}</td></tr>`;});
+    html+=`</table></div></div>`;
+  });
+  if(!sortedDays.length&&!todayRows.length)html+='<p style="color:var(--ink3);padding:8px">Sin historial</p>';
+  el.innerHTML=html;
 }
-
-
-function guardarQuede(id,taskName,val){localStorage.setItem('quede-'+id,val);if(val){const alertas=getAlertas();const existe=alertas.find(a=>a.msg.includes('se quedó en'));if(!existe){const manana=new Date();manana.setDate(manana.getDate()+1);const fechaM=manana.toISOString().slice(0,10);alertas.push({fecha:fechaM,area:'granja',tipo:'info',msg:taskName+' se quedó en: '+val+' — continuar desde ahí',id:Date.now()});localStorage.setItem('gt_alertas',JSON.stringify(alertas))}}}
-
 function renderTabs(){let tabs=[{id:'mis-tareas',icon:'📋',label:'Mis tareas'},{id:'alertas',icon:'⚠️',label:'Alertas'}];if(selectedWorker==='admin')tabs=[{id:'mis-tareas',icon:'📋',label:'Mis tareas'},{id:'dashboard',icon:'📊',label:'Dashboard'},{id:'historial',icon:'📜',label:'Historial'},{id:'hist-tareas',icon:'📊',label:'Tareas del día'},{id:'equipo',icon:'👥',label:'Equipo'},{id:'alertas',icon:'⚠️',label:'Alertas'}];document.getElementById('tabs-bar').innerHTML=tabs.map((t,i)=>`<div class="tab ${i===0?'active':''}" onclick="showSection('${t.id}',this)">${t.icon} ${t.label}</div>`).join('')}
 function showSection(id,el){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');if(el)el.classList.add('active');if(id==='dashboard')renderDash();if(id==='alertas')renderAlertas();if(id==='equipo')renderEquipo();if(id==='hist-tareas'){renderHistTareas();}if(id==='historial'){document.getElementById('hist-worker').innerHTML='<option value="">Selecciona...</option>'+Object.entries(W).map(([id,w])=>`<option value="${id}">${w.emoji} ${w.n}</option>`).join('');renderHistorial()}}
 async function loadData(){cajasData=await sbRPC('cajas');tempsData=await sbRPC('temperaturas')}
