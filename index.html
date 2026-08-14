@@ -347,20 +347,23 @@ async function recalcularConIA(){
 // RENDER
 function renderTarea(tarea,prio,wid){
   const nombre=typeof tarea==='object'?tarea.n:tarea;const tiempo=typeof tarea==='object'?tarea.tiempo:'';
-  const isReasig=typeof tarea==='object'&&tarea.reasignado;const esColecta=nombre.includes('Colectar caja');const wk=esColecta?'colecta':(wid||selectedWorker||'x');const id='t-'+wk+'-'+nombre.replace(/\W/g,'').substring(0,25);const done=localStorage.getItem(id)==='1';
+  const isReasig=typeof tarea==='object'&&tarea.reasignado;const cleanNombre=nombre.includes(': ')?nombre.split(': ').slice(1).join(': '):nombre;const id='t-'+cleanNombre.replace(/\W/g,'').substring(0,30);const done=localStorage.getItem(id)==='1';
   return`<div class="task-item ${isReasig?'reasignado':prio} ${done?'done':''}"><div class="task-check ${done?'checked':''}" onclick="toggleT('${id}','${nombre.replace(/'/g,"\\'")}','${wid||''}')">${done?'✓':''}</div><div class="task-info"><div class="task-name">${nombre}</div>${tiempo?`<div class="task-time">⏱ ${tiempo}</div>`:''}<textarea class="task-obs" placeholder="Observaciones..." rows="1" onchange="saveObs('${id}','${nombre.replace(/'/g,"\\'")}','${wid||''}',this.value)">${localStorage.getItem('obs-'+id)||''}</textarea>${(nombre.includes('agua')||nombre.includes('Agua')||nombre.includes('comida')||nombre.includes('Comida')||nombre.includes('estantería')||nombre.includes('Estantería')||nombre.includes('minigrillos')||nombre.includes('Minigrillos'))?`<div style="margin-top:4px;display:flex;gap:4px;align-items:center"><span style="font-size:10px;color:var(--purple);white-space:nowrap">📍 Me quedé en:</span><input type="text" placeholder="Ej: H1H" style="flex:1;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:inherit" value="${localStorage.getItem('quede-'+id)||''}" onchange="guardarQuede('${id}','${nombre.replace(/'/g,"\\'")}',this.value)"></div>`:''}</div></div>`}
 function toggleT(id,tn,wid){const nv=localStorage.getItem(id)==='1'?'0':'1';localStorage.setItem(id,nv);
-const esCol=tn.includes('Colectar caja');
-if(esCol){
-  // Save history for ALL workers assigned to colecta today
+  // Save history to ALL workers who have this task
   const asig=asignarTareas();
   for(const[wk,a]of Object.entries(asig)){
-    const tiene=a.verde.some(t=>(typeof t==='object'?t.n:t)===tn);
+    const todas=[...a.verde,...a.azul,...a.rojo];
+    const tiene=todas.some(t=>{const nm=typeof t==='object'?t.n:t;return nm===tn;});
     if(tiene)saveToHist(wk,tn,nv==='1',localStorage.getItem('obs-'+id)||'');
   }
-}else if(wid){saveToHist(wid,tn,nv==='1',localStorage.getItem('obs-'+id)||'');}
 renderTareas()}
-function saveObs(id,tn,wid,val){localStorage.setItem('obs-'+id,val);if(wid)saveToHist(wid,tn,localStorage.getItem(id)==='1',val)}
+function saveObs(id,tn,wid,val){localStorage.setItem('obs-'+id,val);
+  const asig=asignarTareas();
+  for(const[wk,a]of Object.entries(asig)){
+    const todas=[...a.verde,...a.azul,...a.rojo];
+    if(todas.some(t=>(typeof t==='object'?t.n:t)===tn))saveToHist(wk,tn,localStorage.getItem(id)==='1',val);
+  }}
 
 function renderTareas(){
   const asig=asignarTareas();const sched=H[DOW];
@@ -407,7 +410,7 @@ function renderTareas(){
   document.getElementById('lst-verde').innerHTML=mis.verde.map(t=>renderTarea(t,'verde',selectedWorker)).join('')||'<p style="padding:8px;color:var(--ink3)">Sin tareas</p>';
   document.getElementById('lst-azul').innerHTML=mis.azul.map(t=>renderTarea(t,'azul',selectedWorker)).join('')||'<p style="padding:8px;color:var(--ink3)">Sin tareas</p>';
   document.getElementById('lst-rojo').innerHTML=mis.rojo.map(t=>renderTarea(t,'rojo',selectedWorker)).join('')||'<p style="padding:8px;color:var(--ink3)">Sin tareas</p>';
-  const cnt=lst=>{const sw2=selectedWorker||'x';const d=lst.filter(t=>{const nm=typeof t==='object'?t.n:t;const ck=nm.includes('Colectar caja')?'colecta':sw2;return localStorage.getItem('t-'+ck+'-'+nm.replace(/\W/g,'').substring(0,25))==='1'}).length;return`${d}/${lst.length}`};
+  const cnt=lst=>{const d=lst.filter(t=>{const nm=typeof t==='object'?t.n:t;const cn=nm.includes(': ')?nm.split(': ').slice(1).join(': '):nm;return localStorage.getItem('t-'+cn.replace(/\W/g,'').substring(0,30))==='1'}).length;return`${d}/${lst.length}`};
   document.getElementById('cnt-verde').textContent=cnt(mis.verde);document.getElementById('cnt-azul').textContent=cnt(mis.azul);document.getElementById('cnt-rojo').textContent=cnt(mis.rojo);
 }
 
@@ -432,9 +435,7 @@ function renderHistTareas(){
     ['verde','azul','rojo'].forEach(pr=>{
       a[pr].forEach(t=>{
         const tn=typeof t==='object'?t.n:t;
-        const esC=tn.includes('Colectar caja');
-        const ck=esC?'colecta':wid;
-        const tid='t-'+ck+'-'+tn.replace(/\W/g,'').substring(0,25);
+        const tid='t-'+tn.replace(/\W/g,'').substring(0,30);
         const done=localStorage.getItem(tid)==='1';
         const obsK='obs-'+tid;
         const obs=localStorage.getItem(obsK)||'';
