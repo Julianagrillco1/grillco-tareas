@@ -461,6 +461,33 @@ areas.forEach(function(ar){
 return asig;
 }
 
+
+// ═══════════════════════════════════════════════════════
+// CONTROL DE HORAS POR TRABAJADOR (máx 8h = 480 min)
+// Estructura para definir horas por trabajador por día
+// ═══════════════════════════════════════════════════════
+var HORAS_MAX={
+// === LUNES ===
+napoleon_1:480, ali_1:480, damia_1:270, begona_1:468, marina_1:480, rodrigo_1:480,
+// === MARTES ===
+napoleon_2:438, ali_2:480, emmanuel_2:462, damia_2:270, begona_2:456, marina_2:480, rodrigo_2:480,
+// === MIÉRCOLES ===
+napoleon_3:438, emmanuel_3:480, zakaria_3:468, damia_3:270, begona_3:498, marina_3:480, rodrigo_3:480,
+// === JUEVES ===
+napoleon_4:438, emmanuel_4:480, zakaria_4:462, damia_4:270, begona_4:468, marina_4:480, rodrigo_4:480,
+// === VIERNES ===
+napoleon_5:480, ali_5:480, emmanuel_5:438, zakaria_5:462, damia_5:270, begona_5:450, marina_5:480, rodrigo_5:480,
+// === SÁBADO ===
+emmanuel_6:480, ali_6:450, zakaria_6:480,
+// === DOMINGO ===
+ali_0:462, zakaria_0:480
+};
+
+function getHorasWorker(wid){
+  var key=wid+'_'+DOW;
+  return HORAS_MAX[key]||480;
+}
+
 // IA para ausencias
 function recalcIA(){
 fetch(IU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({datos:'Cajas:'+cj.filter(function(c){return c.estado==='activa'}).length,trabajadores:Object.values(pres()).map(function(w){return w.n+'('+w.areaHoy+')'}).join(','),dia:DIAS[DOW]+'. AUSENTES:'+Array.from(aus).map(function(id){return W[id]?W[id].n:id}).join(',')})}).then(function(r){return r.text()}).then(function(t){var c=t.replace(/```json/g,'').replace(/```/g,'').trim();iaO=JSON.parse(c);rEquipo();rTareas()}).catch(function(){iaO=null})}
