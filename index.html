@@ -944,6 +944,7 @@ function toggleCheck(wid, tid, tname, isComp, compId) {
     });
   }
   rTareas();
+  guardarSnapshot(); // Guardar estado actualizado
 }
 
 function saveObs(wid, tid, tname, val) {
@@ -1036,44 +1037,147 @@ function toggleAus(id) {
 function rHist() {
   var wid = document.getElementById('hw').value;
   var el = document.getElementById('hc');
-  if (!wid) { el.innerHTML = '<p style="color:var(--ink3);font-size:12px">Selecciona un trabajador.</p>'; return; }
-  var h = gH();
-  var items = (h[wid] || []).filter(function(i) { return i.fecha === HOY; });
-  if (items.length === 0) { el.innerHTML = '<p style="color:var(--ink3);font-size:12px">Sin registros hoy.</p>'; return; }
+  var h2 = gH();
+  if (!wid) {
+    // Si no selecciona nadie, mostrar TODOS (para admin)
+    var allH = '';
+    var hayAlgo = false;
+    Object.keys(W).forEach(function(id) {
+      var items = (h2[id] || []).filter(function(i) { return i.fecha === HOY; });
+      if (items.length === 0) return;
+      hayAlgo = true;
+      allH += '<div style="font-weight:700;font-size:13px;margin:12px 0 4px">' + W[id].ic + ' ' + W[id].n + '</div>';
+      allH += items.map(function(i) {
+        return '<div class="al ' + (i.hecho ? 'al-ok' : 'al-w') + '" style="padding:8px;margin:3px 0">' +
+          (i.hecho ? '✓' : '✗') + ' ' + i.hora + ' — ' + i.tarea +
+          (i.obs ? ' <em style="color:var(--ink2)">📝 ' + i.obs + '</em>' : '') + '</div>';
+      }).join('');
+    });
+    el.innerHTML = hayAlgo ? allH : '<p style="color:var(--ink3);font-size:12px">Sin registros hoy. Cuando los trabajadores marquen tareas, aparecerán aquí.</p>';
+    return;
+  }
+  var items = (h2[wid] || []).filter(function(i) { return i.fecha === HOY; });
+  if (items.length === 0) { el.innerHTML = '<p style="color:var(--ink3);font-size:12px">Sin registros hoy para ' + (W[wid] ? W[wid].n : wid) + '.</p>'; return; }
   el.innerHTML = items.map(function(i) {
-    return '<div class="al ' + (i.hecho ? 'al-ok' : 'al-w') + '">' + i.hora + ' — ' + i.tarea + (i.obs ? ' <em>(' + i.obs + ')</em>' : '') + '</div>';
+    return '<div class="al ' + (i.hecho ? 'al-ok' : 'al-w') + '" style="padding:8px;margin:3px 0">' +
+      (i.hecho ? '✓' : '✗') + ' ' + i.hora + ' — ' + i.tarea +
+      (i.obs ? ' <em style="color:var(--ink2)">📝 ' + i.obs + '</em>' : '') + '</div>';
   }).join('');
 }
 
 // ═══════════════════════════════════════════════════════
 // RENDER TAREAS DEL DÍA
 // ═══════════════════════════════════════════════════════
-function rTDia() {
+// Guardar snapshot del día actual
+function guardarSnapshot() {
   var r = asignar();
-  var el = document.getElementById('htc');
-  var dias = [{dia:HOY, tareas:[]}];
+  var tareas = [];
   Object.keys(W).forEach(function(wid) {
     if (W[wid].dias.indexOf(DOW) < 0) return;
     ['verde','azul','rojo'].forEach(function(p) {
-      (r.asig[wid][p] || []).forEach(function(item) {
-        var id = wid + '-' + p + '-' + item.n;
-        var done = false;
-        dias[0].tareas.push({wid:wid, wname:W[wid].n, tarea:item.n, prio:p, done:done, reasi:item.reasi, tiempo:item.tiempo});
+      (r.asig[wid][p] || []).forEach(function(item, idx) {
+        var tid = p + '-' + idx;
+        var done = localStorage.getItem('t-' + wid + '-' + tid) === '1';
+        var obs = localStorage.getItem('obs-' + wid + '-' + tid) || '';
+        tareas.push({wid:wid, wname:W[wid].n, wic:W[wid].ic, tarea:item.n, prio:p, done:done, reasi:item.reasi, tiempo:item.tiempo, obs:obs});
       });
     });
   });
-  var day = dias[0];
-  var total = day.tareas.length;
-  var dd = day.tareas.filter(function(r) { return r.done; }).length;
-  var h = '<div style="font-size:13px;margin-bottom:8px"><strong>' + day.dia + '</strong> — ' + dd + '/' + total + ' hechas</div>';
-  day.tareas.forEach(function(r) {
-    h += '<div class="ti ' + r.prio + (r.reasi ? ' reasi' : '') + '" style="margin:3px 0;padding:6px 10px">';
-    h += '<span style="font-size:11px;font-weight:600;min-width:80px">' + r.wname + '</span>';
-    h += '<span style="font-size:11px;flex:1">' + r.tarea + (r.reasi ? '<span class="rbadge">REASI</span>' : '') + '</span>';
-    h += '<span style="font-size:10px;color:var(--purple)">' + r.tiempo + '</span>';
+  var snapshots = getSnapshots();
+  snapshots[HOY] = {dia:DIAS[DOW], fecha:HOY, tareas:tareas, guardado:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})};
+  localStorage.setItem('gc_snapshots', JSON.stringify(snapshots));
+}
+function getSnapshots() {
+  try { return JSON.parse(localStorage.getItem('gc_snapshots') || '{}'); } catch(e) { return {}; }
+}
+
+function rTDia() {
+  // Guardar snapshot de hoy
+  guardarSnapshot();
+  var el = document.getElementById('htc');
+  var snapshots = getSnapshots();
+  var fechas = Object.keys(snapshots).sort().reverse(); // más reciente primero
+
+  if (fechas.length === 0) {
+    el.innerHTML = '<p style="color:var(--ink3);font-size:12px">Sin datos todavía.</p>';
+    return;
+  }
+
+  var h = '<div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
+  h += '<span style="font-size:13px;font-weight:600">📅 Historial de tareas</span>';
+  h += '<span style="font-size:11px;color:var(--ink3)">' + fechas.length + ' día' + (fechas.length > 1 ? 's' : '') + ' registrados</span>';
+  h += '<button class="btn" style="font-size:10px;background:var(--rbg);color:var(--danger);margin-left:auto" onclick="if(confirm(\'¿Borrar todo el historial de tareas?\')) { localStorage.removeItem(\'gc_snapshots\'); rTDia(); }">🗑 Limpiar</button>';
+  h += '</div>';
+
+  fechas.forEach(function(fecha, fi) {
+    var snap = snapshots[fecha];
+    var tareas = snap.tareas || [];
+    var total = tareas.length;
+    var hechas = tareas.filter(function(t) { return t.done; }).length;
+    var pend = total - hechas;
+    var pct = total > 0 ? Math.round(hechas / total * 100) : 0;
+    var esHoy = fecha === HOY;
+    var abierto = esHoy || fi === 0; // Hoy siempre abierto
+
+    h += '<div class="card" style="margin:6px 0;padding:0;overflow:hidden">';
+    // Header clickeable
+    h += '<div onclick="toggleDia(\'' + fecha + '\')" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;background:' + (esHoy ? 'var(--gbg)' : 'var(--card)') + '">';
+    h += '<div>';
+    h += '<span style="font-weight:700;font-size:14px">' + (esHoy ? '📌 HOY — ' : '') + snap.dia + ' ' + fecha + '</span>';
     h += '</div>';
+    h += '<div style="display:flex;align-items:center;gap:8px">';
+    h += '<span style="font-size:11px">✅' + hechas + ' ❌' + pend + '</span>';
+    h += '<div style="background:#eee;border-radius:4px;width:50px;height:8px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:' + (pct === 100 ? 'var(--green)' : pct > 50 ? 'var(--amber)' : 'var(--danger)') + ';border-radius:4px"></div></div>';
+    h += '<span style="font-size:11px;font-weight:600">' + pct + '%</span>';
+    h += '<span id="arr-' + fecha + '" style="font-size:14px;transition:transform .2s">' + (abierto ? '▼' : '▶') + '</span>';
+    h += '</div></div>';
+
+    // Contenido desplegable
+    h += '<div id="dia-' + fecha + '" style="display:' + (abierto ? 'block' : 'none') + ';padding:0 14px 12px;border-top:1px solid var(--border)">';
+
+    // Agrupar por trabajador
+    var porW = {};
+    tareas.forEach(function(t) {
+      if (!porW[t.wid]) porW[t.wid] = {name:t.wname, ic:t.wic, items:[]};
+      porW[t.wid].items.push(t);
+    });
+    Object.keys(porW).forEach(function(wid) {
+      var g = porW[wid];
+      var wH = g.items.filter(function(t) { return t.done; }).length;
+      var wT = g.items.length;
+      h += '<div style="margin-top:10px">';
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
+      h += '<span style="font-weight:700;font-size:13px">' + g.ic + ' ' + g.name + '</span>';
+      h += '<span style="font-size:10px;color:var(--ink3)">' + wH + '/' + wT + '</span>';
+      h += '</div>';
+      g.items.forEach(function(t) {
+        var icon = t.done ? '<span style="color:var(--green);font-weight:700">✓</span>' : '<span style="color:var(--danger);font-weight:700">✗</span>';
+        h += '<div class="ti ' + t.prio + (t.reasi ? ' reasi' : '') + (t.done ? ' done' : '') + '" style="margin:2px 0;padding:5px 8px">';
+        h += '<div style="min-width:20px;text-align:center">' + icon + '</div>';
+        h += '<div style="flex:1;margin-left:6px"><span style="font-size:11px;font-weight:600">' + t.tarea + (t.reasi ? '<span class="rbadge">REASI</span>' : '') + '</span>';
+        if (t.obs) h += '<div style="font-size:10px;color:var(--ink2)">📝 ' + t.obs + '</div>';
+        h += '</div>';
+        h += '<span style="font-size:10px;color:var(--purple)">' + t.tiempo + '</span>';
+        h += '</div>';
+      });
+      h += '</div>';
+    });
+    h += '</div></div>';
   });
   el.innerHTML = h;
+}
+
+function toggleDia(fecha) {
+  var el = document.getElementById('dia-' + fecha);
+  var arr = document.getElementById('arr-' + fecha);
+  if (!el) return;
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    if (arr) arr.textContent = '▼';
+  } else {
+    el.style.display = 'none';
+    if (arr) arr.textContent = '▶';
+  }
 }
 
 // ═══════════════════════════════════════════════════════
