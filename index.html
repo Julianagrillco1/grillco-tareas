@@ -160,8 +160,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 <div class="card" style="margin-top:16px;border-left:4px solid var(--blue)"><div class="ct">⚙️ Configuración — Escalamiento</div>
 <div class="cfg-row" style="margin-top:12px"><label>📦 Número de cajas:</label><input type="number" id="cfg-cajas" min="1" max="100" onchange="setCajas(this.value)"><span id="cfg-calc-colecta" style="font-size:12px;color:var(--ink3)"></span></div>
 <div class="cfg-row"><label>⏰ Máx horas/trabajador:</label><input type="number" id="cfg-maxh" min="1" max="12" value="8" onchange="setMaxH(this.value)"></div></div>
-<div class="card" style="margin-top:16px;border-left:4px solid var(--danger)"><div class="ct">🚨 Horario de emergencia</div>
-<div class="afm"><select id="em-worker"></select><input type="text" id="em-tarea" placeholder="Tarea a asignar"><input type="number" id="em-min" placeholder="Minutos" min="1" max="480"><select id="em-prio"><option value="verde">🟢 Alta</option><option value="azul">🔵 Normal</option><option value="rojo">🔴 Baja</option></select><button class="btn btn-p" onclick="addEmergencia()">Asignar</button></div><div id="em-list" style="margin-top:10px"></div></div>
+<div class="card" style="margin-top:16px;border-left:4px solid var(--danger)"><div class="ct">🚨 Redistribución de tareas</div>
+<p style="font-size:12px;color:var(--ink3);margin:6px 0">Al marcar ausente, aquí aparecen sus tareas para redistribuir.</p>
+<div id="redistrib-panel"></div>
+<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+<div class="ct" style="font-size:13px">➕ Asignar tarea manual</div>
+<div class="afm" style="margin-top:6px"><select id="em-worker"></select><input type="text" id="em-tarea" placeholder="Tarea a asignar"><input type="number" id="em-min" placeholder="Minutos" min="1" max="480"><select id="em-prio"><option value="verde">🟢 Alta</option><option value="azul">🔵 Normal</option><option value="rojo">🔴 Baja</option></select><button class="btn btn-p" onclick="addEmergencia()">Asignar</button></div><div id="em-list" style="margin-top:10px"></div>
+</div></div>
 <div class="card" style="margin-top:16px;border-left:4px solid var(--amber)"><div class="ct">📢 Alertas programadas</div>
 <div class="afm"><input type="date" id="af"><select id="aa"><option value="todas">Todas</option><option value="granja">Granja</option><option value="incubacion">Incubación</option><option value="obrador">Obrador</option></select><select id="at"><option value="info">ℹ️ Info</option><option value="warn">⚠️ Importante</option><option value="danger">🚨 Urgente</option></select><textarea id="am" placeholder="Mensaje..." rows="2"></textarea><button class="btn btn-p" onclick="gAlerta()">Programar</button></div><div id="lap" style="margin-top:10px"></div></div>
 </div>
@@ -561,6 +566,10 @@ function asignar(){
     var tiempo=h.min>=60?(h.min/60).toFixed(1)+'h':h.min+'min';
     if(h.comp&&h.pref.length>1){
       var asignados=h.pref.filter(function(id){return presentes[id];});
+      // Si falta algún preferido, buscar en alts para completar el equipo
+      if(asignados.length>0&&asignados.length<h.pref.length){
+        (h.alt||[]).forEach(function(id){if(asignados.length<h.pref.length&&presentes[id]&&asignados.indexOf(id)<0)asignados.push(id);});
+      }
       if(asignados.length===0) asignados=(h.alt||[]).filter(function(id){return presentes[id];});
       if(asignados.length>0){
         var minE=h.min;
@@ -664,12 +673,66 @@ function rEquipo(){
   Object.keys(W).forEach(function(id){if(W[id].dias.indexOf(DOW)<0)return;var m=r.horas[id]||0,pct=Math.min(100,Math.round(m/MAX_MIN*100)),col=pct>100?'var(--danger)':pct>85?'var(--amber)':'var(--green)';
     hh+='<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:12px"><span>'+W[id].ic+' '+W[id].n+(aus.has(id)?' (AUS)':'')+'</span><span style="font-weight:600;color:'+col+'">'+(m/60).toFixed(1)+'h/'+MAX_H+'h</span></div><div class="horas-bar"><div class="horas-bar-fill" style="width:'+pct+'%;background:'+col+'"></div></div></div>';
   });hp.innerHTML=hh;
-  rEms();rAP();renderCatalogo();
+  rEms();rAP();renderCatalogo();rRedistrib();
   var ew=document.getElementById('em-worker');if(ew)ew.innerHTML=Object.keys(W).map(function(id){return'<option value="'+id+'">'+W[id].n+'</option>';}).join('');
   document.getElementById('cfg-cajas').value=MC;document.getElementById('cfg-maxh').value=MAX_H;
   var cc=document.getElementById('cfg-calc-colecta');if(cc)cc.textContent='→ 2p: '+colM2()+'min | 1p: '+colM1()+'min';
 }
 function toggleAus(id){if(!esAdm())return;if(aus.has(id)){aus.delete(id);}else{aus.add(id);recalcIA();}renderAll();}
+
+// Panel de redistribución: muestra tareas de ausentes para asignar
+function rRedistrib(){
+  var el=document.getElementById('redistrib-panel');if(!el)return;
+  if(aus.size===0){el.innerHTML='<p style="color:var(--ink3);font-size:12px">No hay ausentes. Marca un trabajador como ausente para ver sus tareas.</p>';return;}
+  var horarios=getHorarios(),presentes=pres();
+  var h='';
+  // Para cada ausente, mostrar sus tareas
+  aus.forEach(function(ausId){
+    if(!W[ausId]) return;
+    var tareasAus=horarios.filter(function(t){return t.pref.indexOf(ausId)>=0;});
+    if(tareasAus.length===0) return;
+    h+='<div class="card" style="margin:8px 0;padding:12px;border-left:4px solid var(--danger)">';
+    h+='<div style="font-weight:700;font-size:14px;color:var(--danger);margin-bottom:8px">❌ '+W[ausId].n+' — AUSENTE</div>';
+    h+='<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">Sus tareas necesitan ser cubiertas:</div>';
+    tareasAus.forEach(function(t,ti){
+      var tiempo=t.min>=60?(t.min/60).toFixed(1)+'h':t.min+'min';
+      // Buscar quién puede cubrirla
+      var candidatos=[];
+      Object.keys(presentes).forEach(function(pid){
+        if(pid!==ausId) candidatos.push(pid);
+      });
+      h+='<div style="background:var(--rbg);border-radius:8px;padding:8px 10px;margin:4px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">';
+      h+='<div><span style="font-size:12px;font-weight:600">'+t.t+'</span><span style="font-size:10px;color:var(--purple);margin-left:6px">'+tiempo+'</span></div>';
+      h+='<div style="display:flex;gap:4px;align-items:center">';
+      h+='<select id="red-'+ausId+'-'+ti+'" style="padding:4px;font-size:11px;border:1px solid var(--border);border-radius:4px">';
+      h+='<option value="">Asignar a...</option>';
+      candidatos.forEach(function(pid){
+        h+='<option value="'+pid+'">'+W[pid].n+'</option>';
+      });
+      h+='</select>';
+      h+='<button class="btn" style="font-size:10px;background:var(--green);color:#fff;padding:4px 8px" onclick="asignarRedistrib(\''+ausId+'\','+ti+',\''+t.t.replace(/'/g,"\\'")+'\','+t.min+')">✓</button>';
+      h+='</div></div>';
+    });
+    h+='</div>';
+  });
+  // Mostrar horas actuales de presentes
+  var r=asignar();
+  h+='<div style="margin-top:12px;font-weight:700;font-size:13px">📊 Carga actual de presentes:</div>';
+  Object.keys(presentes).forEach(function(pid){
+    var m=r.horas[pid]||0,pct=Math.min(100,Math.round(m/MAX_MIN*100));
+    var col=pct>100?'var(--danger)':pct>85?'var(--amber)':'var(--green)';
+    h+='<div style="display:flex;justify-content:space-between;font-size:12px;margin:4px 0"><span>'+W[pid].ic+' '+W[pid].n+'</span><span style="font-weight:600;color:'+col+'">'+(m/60).toFixed(1)+'h/'+MAX_H+'h</span></div>';
+  });
+  el.innerHTML=h;
+}
+function asignarRedistrib(ausId,ti,tarea,min){
+  var sel=document.getElementById('red-'+ausId+'-'+ti);
+  if(!sel||!sel.value){alert('Selecciona un trabajador');return;}
+  var ems=getEms();
+  ems.push({id:Date.now(),wid:sel.value,tarea:'[de '+W[ausId].n+'] '+tarea,min:min,prio:'verde',fecha:HOY});
+  localStorage.setItem('gem',JSON.stringify(ems));
+  rEms();rRedistrib();rTareas();
+}
 
 function rHist(){
   var wid=document.getElementById('hw').value,el=document.getElementById('hc'),h2=gH();
