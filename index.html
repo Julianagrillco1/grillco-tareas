@@ -270,6 +270,14 @@ function getUserRole(){
   return {r:'worker',a:'granja'};
 }
 function puedeVerAdmin(){ return getUserRole().r==='admin'; }
+// Qué trabajadores ve cada sector
+function getVisibles(area){
+  if(area==='admin') return Object.keys(W);
+  if(area==='granja') return ['napoleon','emmanuel','zakaria','ali','begona','damia'];
+  if(area==='obrador') return ['rodrigo','begona'];
+  if(area==='incubacion') return ['marina','begona','zakaria','ali'];
+  return Object.keys(W);
+}
 
 // ═══════════════════════════════════════════════════════
 // CATÁLOGO DE TAREAS
@@ -523,6 +531,12 @@ function handleRedir(){var p=new URLSearchParams(location.search);var code=p.get
       else mu=upn;
       // Guardar para debug
       console.log('Azure AD response:',JSON.stringify({mail:u.mail,upn:u.userPrincipalName,display:u.displayName,mu:mu}));
+      // LISTA BLANCA: solo estos correos pueden entrar
+      var PERMITIDOS=['ramirez@grillco.cat','villasante@grillco.cat','monter@grillco.cat','granjagrillco@outlook.es','incubaciongrillco@outlook.es','obradorgrillco@outlook.es'];
+      var permitido=false;
+      var uname=mu.split('@')[0].toLowerCase();
+      PERMITIDOS.forEach(function(p){if(mu===p||uname===p.split('@')[0])permitido=true;});
+      if(!permitido){shErr('Acceso denegado. Tu correo ('+mu+') no está autorizado.');return false;}
       localStorage.setItem('gu',mu);
       return true;
     });}).catch(function(e){shErr(e.message);return false;});}
@@ -958,27 +972,55 @@ function enviarChat(){
   var inp=document.getElementById('chat-in'),msg=inp.value.trim();if(!msg)return;inp.value='';
   chatMsgs.push({role:'user',text:msg});renderChat();
   document.getElementById('chat-status').textContent='🔄 Consultando IA...';
-  var r=asignar(),horasStr=Object.keys(r.horas).filter(function(id){return W[id]&&W[id].dias.indexOf(DOW)>=0;}).map(function(id){return W[id].n+':'+(r.horas[id]/60).toFixed(1)+'h';}).join(', ');
-  var ctx='Día: '+DIAS[DOW]+'. Cajas: '+MC+'. Presentes: '+Object.values(pres()).map(function(w){return w.n;}).join(',')+'. Ausentes: '+(aus.size>0?Array.from(aus).map(function(id){return W[id]?W[id].n:id;}).join(','):'ninguno')+'. Horas: '+horasStr+'. Máx: '+MAX_H+'h.';
-  fetch(IU+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mensaje:msg,contexto:ctx,version:'v10'})}).then(function(r){return r.text();}).then(function(t){
+  var r=asignar();
+  var horasStr=Object.keys(r.horas).filter(function(id){return W[id]&&W[id].dias.indexOf(DOW)>=0;}).map(function(id){return W[id].n+':'+(r.horas[id]/60).toFixed(1)+'h';}).join(', ');
+  var tareasStr='';
+  Object.keys(r.asig).forEach(function(wid){if(!W[wid]||W[wid].dias.indexOf(DOW)<0)return;var tt=[];['verde','azul','rojo'].forEach(function(p){(r.asig[wid][p]||[]).forEach(function(it){tt.push(it.n+'('+it.tiempo+')');});});if(tt.length>0)tareasStr+=W[wid].n+': '+tt.join(', ')+'. ';});
+  var ctx='Hoy: '+DIAS[DOW]+' '+HOY+'. Cajas: '+MC+'. MaxHoras: '+MAX_H+'h.\n';
+  ctx+='Presentes: '+Object.values(pres()).map(function(w){return w.n+'('+w.area+')';}).join(', ')+'.\n';
+  ctx+='Ausentes: '+(aus.size>0?Array.from(aus).map(function(id){return W[id]?W[id].n:id;}).join(', '):'ninguno')+'.\n';
+  ctx+='Horas: '+horasStr+'.\n';
+  ctx+='Tareas asignadas: '+tareasStr+'\n';
+  ctx+='Reglas: Colecta siempre 2 personas. FRASS en paralelo con colecta. Si falta 1 de colecta, los 2 restantes hacen colecta juntos y luego 1 hace FRASS. Prioridad: Colecta>Quitar comida>Dar aguas>Dar comida>FRASS>Lavar cajas. Marina falta→Begoña a incubación. Rodrigo falta→Begoña a obrador. Marina+Rodrigo faltan→Begoña a incubación+CONGELAR producto. Tareas rojas se descartan si se excede 8h.\n';
+  fetch(IU+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mensaje:msg,contexto:ctx,version:'v10'})}).then(function(resp){return resp.text();}).then(function(t){
     try{var d=JSON.parse(t);chatMsgs.push({role:'ia',text:d.respuesta||d.resumen||d.mensaje||t});}
     catch(e){chatMsgs.push({role:'ia',text:t});}
     document.getElementById('chat-status').textContent='';renderChat();
-  }).catch(function(e){chatMsgs.push({role:'ia',text:'❌ Error: '+e.message+'. ¿El servidor está encendido? Verifica con: ps aux | grep api_tareas'});document.getElementById('chat-status').textContent='';renderChat();});
+  }).catch(function(e){chatMsgs.push({role:'ia',text:'❌ No se pudo conectar al servidor IA ('+IU+'). Verifica que esté encendido.\n\nPara encenderlo, ejecuta en el servidor:\nkill $(lsof -t -i:8090) 2>/dev/null\nnohup python3 /root/grillco-agente/scripts/api_tareas.py > /root/grillco-agente/logs/api_tareas.log 2>&1 &'});document.getElementById('chat-status').textContent='';renderChat();});
 }
 function renderChat(){
-  var el=document.getElementById('chat-msgs'),h='<div class="chat-msg sys">💡 Pregunta sobre redistribución, vacaciones, planificación.</div>';
-  chatMsgs.forEach(function(m){h+='<div class="chat-msg '+m.role+'">'+m.text+'</div>';});
+  var el=document.getElementById('chat-msgs'),h='<div class="chat-msg sys">💡 Pregunta sobre redistribución, vacaciones, planificación. La IA conoce todas las reglas de la granja.</div>';
+  chatMsgs.forEach(function(m){h+='<div class="chat-msg '+m.role+'">'+m.text.replace(/\n/g,'<br>')+'</div>';});
   el.innerHTML=h;el.scrollTop=el.scrollHeight;
 }
 
 // ═══════════════════════════════════════════════════════
-// IA — SOLO ausentes (NO cada clic)
+// IA — Solo 2+ ausentes (casos complicados)
 // ═══════════════════════════════════════════════════════
 function recalcIA(){
-  if(aus.size===0) return;
-  var r=asignar(),horasStr=Object.keys(r.horas).map(function(id){return(W[id]?W[id].n:id)+':'+(r.horas[id]/60).toFixed(1)+'h';}).join(', ');
-  fetch(IU+'/redistribuir',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({horas:horasStr,maxHoras:MAX_H,cajas:MC,trabajadores:Object.values(pres()).map(function(w){return w.n+'('+w.area+')';}).join(','),dia:DIAS[DOW]+'. AUSENTES:'+Array.from(aus).map(function(id){return W[id]?W[id].n:id;}).join(','),version:'v10'})}).then(function(r){return r.text();}).then(function(t){try{var d=JSON.parse(t);iaO=d.resumen||d.mensaje||t;}catch(e){iaO=t;}rAlertas();}).catch(function(e){iaO='Error IA: '+e.message;rAlertas();});
+  // Solo activar IA cuando hay 2 o más ausentes (casos complicados)
+  if(aus.size<2) return;
+  var r=asignar();
+  var horasStr=Object.keys(r.horas).filter(function(id){return W[id];}).map(function(id){return(W[id].n)+':'+(r.horas[id]/60).toFixed(1)+'h';}).join(', ');
+  var tareasStr='';
+  Object.keys(r.asig).forEach(function(wid){if(!W[wid])return;var tt=[];['verde','azul','rojo'].forEach(function(p){(r.asig[wid][p]||[]).forEach(function(it){tt.push(it.n);});});if(tt.length>0)tareasStr+=W[wid].n+': '+tt.join(', ')+'. ';});
+  var body={
+    dia:DIAS[DOW]+' '+HOY,
+    horas:horasStr,
+    maxHoras:MAX_H,
+    cajas:MC,
+    trabajadores:Object.values(pres()).map(function(w){return w.n+'('+w.area+')';}).join(','),
+    ausentes:Array.from(aus).map(function(id){return W[id]?W[id].n:id;}).join(','),
+    tareasActuales:tareasStr,
+    reglas:'Colecta 2 personas siempre. FRASS paralelo. Si falta 1 colecta, 2 restantes colectan juntos luego 1 FRASS. Prioridad: Colecta>Quitar comida>Dar aguas>Dar comida>FRASS>Lavar cajas. Marina falta=Begoña incubación. Rodrigo falta=Begoña obrador. Ambos=CONGELAR. Rojas se descartan si excede 8h.',
+    version:'v10'
+  };
+  iaO='🔄 Consultando IA para '+aus.size+' ausentes...';
+  rAlertas();
+  fetch(IU+'/redistribuir',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(resp){return resp.text();}).then(function(t){
+    try{var d=JSON.parse(t);iaO='🤖 '+( d.resumen||d.mensaje||t);}catch(e){iaO='🤖 '+t;}
+    rAlertas();
+  }).catch(function(e){iaO='⚠️ IA no disponible: '+e.message+'. Redistribuye manualmente en Equipo → Redistribución.';rAlertas();});
 }
 
 // ═══════════════════════════════════════════════════════
@@ -994,8 +1036,9 @@ function mostrarSel(){
   var wsel=document.getElementById('wsel'),h='';
   if(isAdm) h+='<div class="sbtn" onclick="pedirPIN(\'admin\')"><div style="font-size:28px">👁️</div><div style="font-weight:600;margin-top:6px">Ver todo (Admin)</div></div>';
   Object.keys(W).forEach(function(id){var w=W[id],trabaja=w.dias.indexOf(DOW)>=0;
-    // Admin ve todos. Workers solo ven su área
-    if(!isAdm&&w.area!==areaU) return;
+    // Filtrar por sector: cada correo ve sus trabajadores
+    var visibles=getVisibles(areaU);
+    if(visibles.indexOf(id)<0) return;
     h+='<div class="sbtn" style="'+(trabaja?'':'opacity:.3')+'" onclick="pedirPIN(\''+id+'\')"><div style="font-size:28px">'+w.ic+'</div><div style="font-weight:600;margin-top:6px">'+w.n+'</div><div style="font-size:10px;color:var(--ink3)">'+w.area+(trabaja?'':' (no hoy)')+'</div></div>';});
   wsel.innerHTML=h;
 }
@@ -1022,7 +1065,8 @@ function renderAll(){limpiarDia();if(sw==='admin'){rDash();rEquipo();}rTareas();
 function mostrarApp(){document.getElementById('sel').style.display='none';document.getElementById('app').style.display='block';loadData().then(function(){return syncBajar();}).then(renderAll);}
 setInterval(function(){loadData().then(function(){return syncBajar();}).then(function(){if(sw)renderAll();});},15000);
 
-(function(){var p=new URLSearchParams(location.search);if(p.get('code')){handleRedir().then(function(ok){if(ok)mostrarSel();});return;}var s=localStorage.getItem('gu');if(s){mu=s;mostrarSel();}})();
+var PERMITIDOS_G=['ramirez','villasante','monter','granjagrillco','incubaciongrillco','obradorgrillco'];
+(function(){var p=new URLSearchParams(location.search);if(p.get('code')){handleRedir().then(function(ok){if(ok)mostrarSel();});return;}var s=localStorage.getItem('gu');if(s){var un=s.split('@')[0].toLowerCase();if(PERMITIDOS_G.indexOf(un)<0){localStorage.removeItem('gu');return;}mu=s;mostrarSel();}})();
 </script>
 </body>
 </html>
