@@ -722,11 +722,13 @@ function asignar(){
           if(al2.length>0){tg=mc(al2);ir=true;}
           else{
             // Buscar en CUALQUIER trabajador presente con horas libres
-            var todos=Object.keys(presentes).filter(function(id){return ok(id,h.min);});
+            // EXCLUIR: Damia (medio día, no puede más) y Marina (solo incubación)
+            var todos=Object.keys(presentes).filter(function(id){return id!=='damia'&&id!=='marina'&&ok(id,h.min);});
             if(todos.length>0){tg=mc(todos);ir=true;}
             else{
-              // NADIE tiene horas → asignar al que tenga MENOS carga (parcial hasta 8h)
-              var menosOcupado=mc(Object.keys(presentes));
+              // NADIE tiene horas → asignar al que tenga MENOS carga (no Damia, no Marina para granja)
+              var candidatos=Object.keys(presentes).filter(function(id){return id!=='damia'&&id!=='marina';});
+              var menosOcupado=mc(candidatos);
               if(menosOcupado&&(hU[menosOcupado]||0)<MAX_MIN){tg=menosOcupado;ir=true;}
               else if(h.p==='verde'){
                 // Verde obligatoria: asignar aunque exceda
