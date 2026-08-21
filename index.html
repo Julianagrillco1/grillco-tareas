@@ -549,9 +549,11 @@ function syncSubir(){
   sbSet('alertas',gAls());
   sbSet('emergencias',getEms().filter(function(e){return e.fecha===HOY;}));
 }
+var _ausLocal=0; // timestamp del último cambio local de ausentes
 function syncBajar(){
   return Promise.all([sbGet('ausentes'),sbGet('checks'),sbGet('alertas'),sbGet('emergencias')]).then(function(r){
-    if(r[0]&&Array.isArray(r[0]))aus=new Set(r[0]);
+    // Solo actualizar ausentes si NO hubo cambio local en los últimos 30 seg
+    if(r[0]&&Array.isArray(r[0])&&(Date.now()-_ausLocal>30000))aus=new Set(r[0]);
     if(r[1]&&typeof r[1]==='object')Object.keys(r[1]).forEach(function(k){if(!localStorage.getItem(k)||r[1][k]==='1')localStorage.setItem(k,r[1][k]);});
     if(r[2]&&Array.isArray(r[2]))localStorage.setItem('ga',JSON.stringify(r[2]));
     if(r[3]&&Array.isArray(r[3])){var em=getEms().filter(function(e){return e.fecha!==HOY;});localStorage.setItem('gem',JSON.stringify(em.concat(r[3])));}
@@ -809,7 +811,7 @@ function rEquipo(){
   document.getElementById('cfg-cajas').value=MC;document.getElementById('cfg-maxh').value=MAX_H;
   var cc=document.getElementById('cfg-calc-colecta');if(cc)cc.textContent='→ 2p: '+colM2()+'min | 1p: '+colM1()+'min';
 }
-function toggleAus(id){if(!esAdm())return;if(aus.has(id)){aus.delete(id);}else{aus.add(id);recalcIA();}syncSubir();renderAll();}
+function toggleAus(id){if(!esAdm())return;if(aus.has(id)){aus.delete(id);}else{aus.add(id);recalcIA();}_ausLocal=Date.now();syncSubir();renderAll();}
 
 // Panel de redistribución: muestra tareas de ausentes para asignar
 function rRedistrib(){
