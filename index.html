@@ -149,7 +149,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 </div>
 
 <!-- Tareas día (acumulativo) -->
-<div id="s-tdia" class="sec"><div class="card"><div class="ct">📊 Tareas del día — Historial acumulativo</div><div id="htc" style="margin-top:10px"></div></div></div>
+<div id="s-tdia" class="sec"><div class="card"><div class="ct">📊 Tareas del día — Historial acumulativo</div><button class="btn btn-p" style="font-size:11px;margin-top:6px" onclick="guardarHistorialDia();alert('Historial del día guardado en Supabase (gc_historial)')">💾 Guardar historial de hoy en Supabase</button><div id="htc" style="margin-top:10px"></div></div></div>
 
 <!-- Equipo -->
 <div id="s-equipo" class="sec">
@@ -744,6 +744,7 @@ function rTareas(){
     contEl.innerHTML=ph;
   } else { contEl.innerHTML=''; }
   var qs=Object.keys(localStorage).filter(function(k){return k.startsWith('q-');});
+  var aldp=document.getElementById('aldespleg');
   aldp.innerHTML=qs.length?qs.map(function(k){return'<div class="al al-i">📌 Continuar desde: '+localStorage.getItem(k)+'</div>';}).join(''):'';
 
   ['verde','azul','rojo'].forEach(function(prio){
@@ -764,10 +765,16 @@ function toggleCheck(wid,tid,tname,isComp,compId){
   localStorage.setItem(key,done?'0':'1');sH(wid,tname,!done);
   if(isComp&&compId){var r=asignar();Object.keys(r.asig).forEach(function(oid){if(oid===wid)return;['verde','azul','rojo'].forEach(function(p){(r.asig[oid][p]||[]).forEach(function(it,idx){if(it.comp&&it.compId===compId){localStorage.setItem('t-'+oid+'-'+p+'-'+idx,done?'0':'1');sH(oid,tname,!done,'Por '+((W[wid]||{}).n||wid));}});});});}
   rTareas();guardarSnapshot();syncSubir();
-  // Guardar en historial Supabase
-  sbHistorial(wid,tname,0,'',!done,'','','');
+  // Guardar en historial Supabase con datos completos
+  var prio=tid.split('-')[0]||'verde';
+  var r2=asignar(),minT=0;
+  ['verde','azul','rojo'].forEach(function(p){(r2.asig[wid][p]||[]).forEach(function(it){if(it.n.indexOf(tname)>=0)minT=it.minutos;});});
+  sbHistorial(wid,tname,minT,prio,!done,localStorage.getItem('obs-'+wid+'-'+tid)||'',false,'');
 }
-function saveObs(wid,tid,tname,val){localStorage.setItem('obs-'+wid+'-'+tid,val);if(val.trim())sH(wid,tname+' (obs)',true,val);}
+function saveObs(wid,tid,tname,val){
+  localStorage.setItem('obs-'+wid+'-'+tid,val);
+  if(val.trim()){sH(wid,tname+' (obs)',true,val);syncSubir();}
+}
 
 // ═══════════════════════════════════════════════════════
 // SNAPSHOTS TAREAS DÍA (acumulativo)
