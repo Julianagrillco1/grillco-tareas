@@ -357,26 +357,30 @@ function colM1(){return MC*20;}
 // ═══════════════════════════════════════════════════════
 
 // LUNES (1): Napoleon+Ali colecta, Napoleon FRASS, Ali quitar/dar comida, Begoña aguas
+// LUNES: Nap falta→Ali solo colecta+quitar+dar comida+FRASS. Ali falta→Nap solo colecta+quitar+aguas+FRASS+lavar
+// Begoña falta→Nap deja FRASS hace aguas, Ali prep cajas+aspersor. Marina falta→Begoña a incub
+// Damia falta→Ali hace cajas. Rodrigo falta→Begoña a obrador, sus tareas se reparten
 function getH1_granja(){var c2=colM2();return[
-  {t:'Colecta ('+MC+' cajas, 2 pers)',min:c2,pref:['napoleon','ali'],alt:['begona','emmanuel'],p:'verde',comp:true},
-  {t:'FRASS',min:getM('frass'),pref:['napoleon'],alt:['ali','emmanuel'],p:'verde'},
+  {t:'Colecta ('+MC+' cajas, 2 pers)',min:c2,pref:['napoleon','ali'],alt:['begona'],p:'verde',comp:true},
   {t:'Quitar comida',min:getM('quitar_comida'),pref:['ali'],alt:['napoleon'],p:'verde'},
+  {t:'Dar aguas (6h)',min:getM('dar_aguas_6h'),pref:['begona'],alt:['napoleon','ali'],p:'verde'},
   {t:'Dar comida (2h)',min:getM('dar_comida_2h'),pref:['ali'],alt:['napoleon'],p:'verde'},
-  {t:'Dar aguas (6h)',min:getM('dar_aguas_6h'),pref:['begona'],alt:['ali','napoleon'],p:'verde'},
+  {t:'FRASS',min:getM('frass'),pref:['napoleon'],alt:['ali'],p:'verde'},
   {t:'Lavar cajas incubación',min:getM('lavar_cajas_incub'),pref:['napoleon'],alt:['ali'],p:'azul'},
-  {t:'Preparar cajas comida',min:getM('prep_cajas_comida'),pref:['begona'],alt:['marina'],p:'verde'},
-  {t:'Agua aspersor',min:getM('agua_aspersor'),pref:['begona'],alt:['marina'],p:'azul'}
+  {t:'Preparar cajas comida',min:getM('prep_cajas_comida'),pref:['begona'],alt:['ali','marina'],p:'verde'},
+  {t:'Agua aspersor',min:getM('agua_aspersor'),pref:['begona'],alt:['marina','ali'],p:'azul'}
 ];}
 // MARTES (2): Napoleon+Emmanuel colecta, Ali FRASS, Napoleon aguas
+// MARTES: Nap falta→Ali+Emm colecta, Emm aguas, Ali FRASS+comida. Ali falta→Nap+Emm colecta, Emm FRASS+comida+lavar. Emm falta→Nap+Ali colecta, Ali FRASS+comida, Nap ayuda comida
 function getH2_granja(){var c2=colM2();
   var sem=Math.floor((new Date()-new Date(new Date().getFullYear(),0,1))/604800000);
   var par=sem%2===0;var t=[
-  {t:'Colecta ('+MC+' cajas, 2 pers)',min:c2,pref:['napoleon','emmanuel'],alt:['ali','zakaria'],p:'verde',comp:true},
+  {t:'Colecta ('+MC+' cajas, 2 pers)',min:c2,pref:['napoleon','emmanuel'],alt:['ali'],p:'verde',comp:true},
+  {t:'Quitar comida',min:getM('quitar_comida'),pref:['ali'],alt:['emmanuel','napoleon'],p:'verde'},
+  {t:'Dar aguas (4h)',min:getM('dar_aguas_4h'),pref:['napoleon'],alt:['emmanuel'],p:'verde'},
+  {t:'Dar comida (4h)',min:getM('dar_comida_4h'),pref:['ali'],alt:['emmanuel','napoleon'],p:'verde'},
   {t:'FRASS',min:getM('frass'),pref:['ali'],alt:['emmanuel'],p:'verde'},
-  {t:'Dar aguas (4h)',min:getM('dar_aguas_4h'),pref:['napoleon'],alt:['emmanuel','ali'],p:'verde'},
-  {t:'Dar comida (4h)',min:getM('dar_comida_4h'),pref:['ali'],alt:['emmanuel'],p:'verde'},
-  {t:'Quitar comida',min:getM('quitar_comida'),pref:['ali'],alt:['napoleon'],p:'verde'},
-  {t:'Lavar cajas incubación',min:getM('lavar_cajas_incub'),pref:['emmanuel'],alt:['ali'],p:'azul'},
+  {t:'Lavar cajas incubación',min:getM('lavar_cajas_incub'),pref:['emmanuel'],alt:['napoleon','ali'],p:'azul'},
   {t:'Limpiar zona pienso',min:getM('limpiar_zona_pienso'),pref:['emmanuel'],alt:[],p:'rojo'}];
   if(par){t.push({t:'Cambiar cinta amarilla (sem par)',min:getM('cinta_amarilla'),pref:['emmanuel'],alt:[],p:'verde'});}
   else{t.push({t:'Matar arañas (2h)',min:getM('matar_aranas_2h'),pref:['emmanuel'],alt:[],p:'azul'});
@@ -387,44 +391,47 @@ function getH2_granja(){var c2=colM2();
   t.push({t:'Agua aspersor',min:getM('agua_aspersor'),pref:['begona'],alt:['marina'],p:'azul'});
   return t;}
 // MIÉRCOLES (3): NO AGUAS NO COMIDA. Napoleon+Emmanuel colecta, Zakaria FRASS
+// MIÉRCOLES NO AGUA NO COMIDA. Nap falta→Zak+Emm colecta,Zak FRASS,Emm quitar+cortar+cajas+lavar mat. Zak falta→Nap FRASS,Emm lavar cajas+est. Emm falta→Nap+Zak colecta,Nap lavar mat
 function getH3_granja(){var c2=colM2();return[
   {t:'Colecta ('+MC+' cajas, 2 pers)',min:c2,pref:['napoleon','emmanuel'],alt:['zakaria'],p:'verde',comp:true},
+  {t:'Quitar comida',min:getM('quitar_comida'),pref:['napoleon'],alt:['emmanuel','zakaria'],p:'verde'},
   {t:'FRASS',min:getM('frass'),pref:['zakaria'],alt:['napoleon'],p:'verde'},
-  {t:'Quitar comida',min:getM('quitar_comida'),pref:['napoleon'],alt:['zakaria'],p:'verde'},
+  {t:'Lavar material aguas + botellas',min:getM('lavar_mat_aguas'),pref:['emmanuel'],alt:['napoleon'],p:'verde'},
   {t:'Cortar cartones',min:getM('cortar_cartones'),pref:['napoleon'],alt:['emmanuel'],p:'azul'},
   {t:'Hacer cajas (2h)',min:getM('hacer_cajas_2h'),pref:['napoleon'],alt:['emmanuel'],p:'azul'},
   {t:'Matar arañas (1h)',min:getM('matar_aranas_1h'),pref:['emmanuel'],alt:['zakaria'],p:'azul'},
-  {t:'Lavar material aguas + botellas',min:getM('lavar_mat_aguas'),pref:['emmanuel'],alt:['napoleon'],p:'verde'},
-  {t:'Limpiar zona frass + maquinaria',min:getM('limpiar_zona_frass'),pref:['emmanuel'],alt:[],p:'azul'},
+  {t:'Limpiar zona frass + maquinaria',min:getM('limpiar_zona_frass'),pref:['emmanuel'],alt:['zakaria'],p:'azul'},
   {t:'Lavar cajas incubación',min:getM('lavar_cajas_incub'),pref:['zakaria'],alt:['emmanuel'],p:'azul'},
-  {t:'Limpiar estanterías (2h)',min:getM('limpiar_est_2h'),pref:['zakaria'],alt:[],p:'azul'},
-  {t:'Limpiar suelo',min:getM('limpiar_suelo'),pref:['zakaria'],alt:[],p:'rojo'},
-  {t:'Registros',min:getM('registros'),pref:['zakaria'],alt:[],p:'rojo'}
+  {t:'Limpiar estanterías (2h)',min:getM('limpiar_est_2h'),pref:['zakaria'],alt:['emmanuel'],p:'azul'},
+  {t:'Limpiar suelo',min:getM('limpiar_suelo'),pref:['zakaria'],alt:['emmanuel','napoleon'],p:'rojo'},
+  {t:'Registros',min:getM('registros'),pref:['zakaria'],alt:['napoleon'],p:'rojo'}
 ];}
 // JUEVES (4): Emmanuel+Zakaria colecta, Napoleon FRASS
+// JUEVES: Emm falta→Nap+Zak colecta,Nap FRASS+cajas+lavar,Zak est+suelo+aguas. Zak falta→Nap+Emm,est→Nap/Emm. Nap falta→Zak colecta,Zak FRASS
 function getH4_granja(){var c2=colM2();return[
   {t:'Colecta ('+MC+' cajas, 2 pers)',min:c2,pref:['emmanuel','zakaria'],alt:['napoleon'],p:'verde',comp:true},
-  {t:'FRASS',min:getM('frass'),pref:['napoleon'],alt:['zakaria'],p:'verde'},
   {t:'Dar aguas (3h)',min:getM('dar_aguas_3h'),pref:['emmanuel'],alt:['zakaria','napoleon'],p:'verde'},
   {t:'Dar comida (2h)',min:getM('dar_comida_2h'),pref:['emmanuel'],alt:['napoleon','zakaria'],p:'verde'},
-  {t:'Hacer cajas (3h)',min:getM('hacer_cajas_3h'),pref:['napoleon'],alt:[],p:'azul'},
-  {t:'Lavar cajas incubación',min:getM('lavar_cajas_incub'),pref:['napoleon'],alt:[],p:'azul'},
-  {t:'Limpiar estanterías (3h)',min:getM('limpiar_est_3h'),pref:['zakaria'],alt:[],p:'azul'},
-  {t:'Limpiar suelo',min:getM('limpiar_suelo'),pref:['zakaria'],alt:['napoleon'],p:'rojo'}
+  {t:'FRASS',min:getM('frass'),pref:['napoleon'],alt:['zakaria'],p:'verde'},
+  {t:'Hacer cajas (3h)',min:getM('hacer_cajas_3h'),pref:['napoleon'],alt:['emmanuel'],p:'azul'},
+  {t:'Lavar cajas incubación',min:getM('lavar_cajas_incub'),pref:['napoleon'],alt:['emmanuel'],p:'azul'},
+  {t:'Limpiar estanterías (3h)',min:getM('limpiar_est_3h'),pref:['zakaria'],alt:['napoleon','emmanuel'],p:'azul'},
+  {t:'Limpiar suelo',min:getM('limpiar_suelo'),pref:['zakaria'],alt:['napoleon','emmanuel'],p:'rojo'}
 ];}
 // VIERNES (5): Ali+Zakaria colecta, Emmanuel FRASS
+// VIERNES: Ali/Zak falta→Nap sube colecta(reduce aguas). Zak falta→tareas a Emm. Ali falta→tareas a Emm
 function getH5_granja(){var c2=colM2();return[
   {t:'Colecta ('+MC+' cajas, 2 pers)',min:c2,pref:['ali','zakaria'],alt:['napoleon','emmanuel'],p:'verde',comp:true},
+  {t:'Dar aguas (7h)',min:getM('dar_aguas_7h'),pref:['napoleon'],alt:['ali','emmanuel'],p:'verde'},
+  {t:'Dar comida (4h)',min:getM('dar_comida_4h'),pref:['emmanuel'],alt:['napoleon','ali'],p:'verde'},
   {t:'FRASS',min:getM('frass'),pref:['emmanuel'],alt:['zakaria','ali','napoleon'],p:'verde'},
-  {t:'Dar aguas (7h)',min:getM('dar_aguas_7h'),pref:['napoleon'],alt:['ali'],p:'verde'},
-  {t:'Dar comida (4h)',min:getM('dar_comida_4h'),pref:['emmanuel'],alt:['napoleon'],p:'verde'},
-  {t:'Cortar cartones',min:getM('cortar_cartones'),pref:['napoleon'],alt:[],p:'azul'},
-  {t:'Matar arañas (2h)',min:getM('matar_aranas_2h'),pref:['ali'],alt:[],p:'azul'},
-  {t:'Limpiar material incubación',min:getM('limpiar_mat_incub'),pref:['ali'],alt:[],p:'azul'},
-  {t:'Limpiar zona limpieza+pasillos',min:getM('limpiar_zona_limp'),pref:['ali'],alt:[],p:'rojo'},
-  {t:'Lavar cajas incubación',min:getM('lavar_cajas_incub'),pref:['zakaria'],alt:[],p:'azul'},
-  {t:'Limpiar estanterías (3h)',min:getM('limpiar_est_3h'),pref:['zakaria'],alt:[],p:'azul'},
-  {t:'Limpiar suelo',min:getM('limpiar_suelo'),pref:['zakaria'],alt:[],p:'rojo'}
+  {t:'Cortar cartones',min:getM('cortar_cartones'),pref:['napoleon'],alt:['ali','emmanuel'],p:'azul'},
+  {t:'Matar arañas (2h)',min:getM('matar_aranas_2h'),pref:['ali'],alt:['emmanuel','zakaria'],p:'azul'},
+  {t:'Limpiar material incubación',min:getM('limpiar_mat_incub'),pref:['ali'],alt:['emmanuel'],p:'azul'},
+  {t:'Limpiar zona limpieza+pasillos',min:getM('limpiar_zona_limp'),pref:['ali'],alt:['emmanuel'],p:'rojo'},
+  {t:'Lavar cajas incubación',min:getM('lavar_cajas_incub'),pref:['zakaria'],alt:['emmanuel','ali'],p:'azul'},
+  {t:'Limpiar estanterías (3h)',min:getM('limpiar_est_3h'),pref:['zakaria'],alt:['emmanuel','ali'],p:'azul'},
+  {t:'Limpiar suelo',min:getM('limpiar_suelo'),pref:['zakaria'],alt:['emmanuel','napoleon'],p:'rojo'}
 ];}
 // SÁBADO (6)
 function getH6_granja(){return[
@@ -455,9 +462,10 @@ function getIncub(){return[
   {t:'Registros limpieza',min:getM('registros_15'),pref:['marina'],alt:['begona'],p:'rojo'}
 ];}
 // Cajas L-V (Damia)
+// Damia falta→Ali hace cajas (L), o quien tenga más tiempo
 function getCajas(){return[
-  {t:'Hacer cajas (9-13h)',min:getM('hacer_cajas_4h'),pref:['damia'],alt:['begona','zakaria'],p:'verde'},
-  {t:'Limpiar zona (Damia)',min:getM('limpiar_zona_damia'),pref:['damia'],alt:['begona'],p:'azul'},
+  {t:'Hacer cajas (9-13h)',min:getM('hacer_cajas_4h'),pref:['damia'],alt:['ali','begona','zakaria','napoleon','emmanuel'],p:'verde'},
+  {t:'Limpiar zona (Damia)',min:getM('limpiar_zona_damia'),pref:['damia'],alt:['begona','ali'],p:'azul'},
   {t:'Registros limpieza',min:getM('registros_15'),pref:['damia'],alt:['begona'],p:'rojo'}
 ];}
 // Obrador L-V (Rodrigo)
@@ -543,52 +551,71 @@ function guardarQuede(id,tn,val){if(!val.trim())return;localStorage.setItem('q-'
 function limpiarDia(){var ul=localStorage.getItem('gc_last_day');if(ul&&ul!==HOY){Object.keys(localStorage).filter(function(k){return k.startsWith('t-')||k.startsWith('obs-')||k.startsWith('q-');}).forEach(function(k){localStorage.removeItem(k);});aus.clear();}localStorage.setItem('gc_last_day',HOY);}
 
 // ═══════════════════════════════════════════════════════
-// CONFIG
+// CONFIG + CASCADA DE REEMPLAZOS
 // ═══════════════════════════════════════════════════════
-function pres(){var r={};Object.keys(W).forEach(function(id){if(!aus.has(id)&&W[id].dias.indexOf(DOW)>=0)r[id]={n:W[id].n,area:W[id].area};});return r;}
+function pres(){
+  var r={};
+  var begEnObr=aus.has('rodrigo')&&!aus.has('begona');
+  var begEnInc=aus.has('marina')&&!aus.has('begona')&&!begEnObr;
+  var congelar=aus.has('marina')&&aus.has('rodrigo');
+  Object.keys(W).forEach(function(id){
+    if(!aus.has(id)&&W[id].dias.indexOf(DOW)>=0){
+      var a=W[id].area;
+      if(id==='begona'){if(begEnObr)a='obrador';else if(begEnInc)a='incubacion';}
+      r[id]={n:W[id].n,area:a,orig:W[id].area};
+    }
+  });
+  window._begObr=begEnObr;window._begInc=begEnInc;window._cong=congelar;
+  return r;
+}
 function setCajas(v){MC=parseInt(v)||14;localStorage.setItem('gc_cajas',MC);var el=document.getElementById('cfg-calc-colecta');if(el)el.textContent='→ 2p: '+colM2()+'min | 1p: '+colM1()+'min';renderCatalogo();renderAll();}
 function setMaxH(v){MAX_H=parseInt(v)||8;MAX_MIN=MAX_H*60;localStorage.setItem('gc_maxh',MAX_H);renderAll();}
 
+// Prioridad: Colecta>Quitar comida>Dar aguas>Dar comida>FRASS>Lavar cajas>Preparar cajas>Hacer cajas...
+var PO=['Colecta','Quitar comida','Dar aguas','Dar comida','FRASS','Lavar cajas','Preparar cajas','Hacer cajas','Cortar cart','Matar ara','Lavar material','Limpiar est','Limpiar suelo','Limpiar zona','Tamizar','Agua aspersor','Registros','Limpiar pared'];
+function pi(n){for(var i=0;i<PO.length;i++){if(n.indexOf(PO[i])>=0)return i;}return 99;}
+
 // ═══════════════════════════════════════════════════════
-// ASIGNACIÓN
+// ASIGNACIÓN CON CASCADA + OVERRIDES + PRIORIDAD
 // ═══════════════════════════════════════════════════════
 function asignar(){
   var horarios=getHorarios(),presentes=pres(),asig={},hU={};
   Object.keys(W).forEach(function(id){asig[id]={verde:[],azul:[],rojo:[]};hU[id]=0;});
-  // Emergencias
-  getEms().filter(function(e){return e.fecha===HOY;}).forEach(function(e){
-    if(asig[e.wid]){var t=e.min>=60?(e.min/60).toFixed(1)+'h':e.min+'min';asig[e.wid][e.prio].push({n:'🚨 '+e.tarea,tiempo:t,reasi:false,minutos:e.min});hU[e.wid]=(hU[e.wid]||0)+e.min;}
-  });
-  function menosC(lista){var m=Infinity,b=null;lista.forEach(function(id){if(asig[id]&&(hU[id]||0)<m){m=hU[id]||0;b=id;}});return b;}
-  function puede(wid,min){return(hU[wid]||0)+min<=MAX_MIN;}
-
+  // Overrides
+  var ems=getEms().filter(function(e){return e.fecha===HOY;}),ov={},ex=[];
+  ems.forEach(function(e){if(e.override&&e.tareaOrig)ov[e.tareaOrig]=e;else ex.push(e);});
+  ex.forEach(function(e){if(asig[e.wid]){var t=e.min>=60?(e.min/60).toFixed(1)+'h':e.min+'min';asig[e.wid][e.prio].push({n:'🚨 '+e.tarea,tiempo:t,reasi:false,minutos:e.min});hU[e.wid]=(hU[e.wid]||0)+e.min;}});
+  // Congelar
+  if(window._cong){var gk=Object.keys(presentes);if(gk.length>0)asig[gk[0]].verde.unshift({n:'🧊 PROTOCOLO: Producto colecta → CONGELADOR',tiempo:'—',reasi:true,minutos:0});}
+  // Begoña en obrador: asignar tareas de Rodrigo
+  if(window._begObr&&presentes['begona']){getObrador().forEach(function(t){var ti=t.min>=60?(t.min/60).toFixed(1)+'h':t.min+'min';hU['begona']+=t.min;asig['begona'][t.p].push({n:t.t+' (x Rodrigo)',tiempo:ti,reasi:true,minutos:t.min});});}
+  // Begoña en incub: asignar tareas de Marina
+  if(window._begInc&&presentes['begona']){getIncub().forEach(function(t){var ti=t.min>=60?(t.min/60).toFixed(1)+'h':t.min+'min';hU['begona']+=t.min;asig['begona'][t.p].push({n:t.t+' (x Marina)',tiempo:ti,reasi:true,minutos:t.min});});}
+  function mc(l){var m=Infinity,b=null;l.forEach(function(id){if(asig[id]&&(hU[id]||0)<m){m=hU[id]||0;b=id;}});return b;}
+  function ok(w,m){return(hU[w]||0)+m<=MAX_MIN;}
+  // Filtrar: si Begoña movida, quitarla de granja; si Rodrigo/Marina ausentes, skip sus tareas normales
+  var hf=[];
   horarios.forEach(function(h){
+    var hc={t:h.t,min:h.min,pref:h.pref.slice(),alt:(h.alt||[]).slice(),p:h.p,comp:h.comp,compId:h.compId};
+    if(window._begObr||window._begInc){hc.pref=hc.pref.filter(function(x){return x!=='begona';});hc.alt=hc.alt.filter(function(x){return x!=='begona';});}
+    if(window._begObr&&hc.pref.indexOf('rodrigo')>=0&&hc.pref.length===1)return;
+    if(window._begInc&&hc.pref.indexOf('marina')>=0&&hc.pref.length===1)return;
+    hf.push(hc);
+  });
+  // Ordenar por prioridad
+  hf.sort(function(a,b){var pa=a.p==='verde'?0:a.p==='azul'?1:2,pb=b.p==='verde'?0:b.p==='azul'?1:2;return pa!==pb?pa-pb:pi(a.t)-pi(b.t);});
+  hf.forEach(function(h){
     var tiempo=h.min>=60?(h.min/60).toFixed(1)+'h':h.min+'min';
+    if(ov[h.t]){var o=ov[h.t];if(presentes[o.wid]){var ot=o.min>=60?(o.min/60).toFixed(1)+'h':o.min+'min';hU[o.wid]+=o.min;asig[o.wid][h.p].push({n:h.t,tiempo:ot,reasi:true,minutos:o.min});return;}}
     if(h.comp&&h.pref.length>1){
-      var asignados=h.pref.filter(function(id){return presentes[id];});
-      // Si falta algún preferido, buscar en alts para completar el equipo
-      if(asignados.length>0&&asignados.length<h.pref.length){
-        (h.alt||[]).forEach(function(id){if(asignados.length<h.pref.length&&presentes[id]&&asignados.indexOf(id)<0)asignados.push(id);});
-      }
-      if(asignados.length===0) asignados=(h.alt||[]).filter(function(id){return presentes[id];});
-      if(asignados.length>0){
-        var minE=h.min;
-        if(h.t.indexOf('Colecta')>=0&&asignados.length===1){minE=colM1();tiempo=(minE/60).toFixed(1)+'h (solo)';}
-        asignados.forEach(function(id){
-          hU[id]=(hU[id]||0)+minE;
-          asig[id][h.p].push({n:h.t+(asignados.length>1?' (con '+asignados.filter(function(x){return x!==id;}).map(function(x){return W[x]?W[x].n:x;}).join('+')+')':''),tiempo:tiempo,reasi:h.pref.indexOf(id)<0,minutos:minE,comp:true,compId:h.t});
-        });
-      }
-    } else {
-      var target=null;
-      for(var i=0;i<h.pref.length;i++){if(presentes[h.pref[i]]){target=h.pref[i];break;}}
-      if(!target){for(var j=0;j<(h.alt||[]).length;j++){if(presentes[h.alt[j]]){target=h.alt[j];break;}}}
-      if(target){
-        var isR=h.pref.indexOf(target)<0;
-        if(!puede(target,h.min)){var alts=(h.alt||[]).filter(function(id){return presentes[id]&&puede(id,h.min);});if(alts.length>0){target=menosC(alts);isR=true;}}
-        hU[target]=(hU[target]||0)+h.min;
-        asig[target][h.p].push({n:h.t,tiempo:tiempo,reasi:isR,minutos:h.min});
-      }
+      var ag=h.pref.filter(function(id){return presentes[id];});
+      if(ag.length>0&&ag.length<2)(h.alt||[]).forEach(function(id){if(ag.length<2&&presentes[id]&&ag.indexOf(id)<0)ag.push(id);});
+      if(ag.length===0)ag=(h.alt||[]).filter(function(id){return presentes[id];}).slice(0,2);
+      if(ag.length>0){var mE=h.min;if(h.t.indexOf('Colecta')>=0&&ag.length===1){mE=colM1();tiempo=(mE/60).toFixed(1)+'h (solo)';}ag.forEach(function(id){hU[id]+=mE;asig[id][h.p].push({n:h.t+(ag.length>1?' (con '+ag.filter(function(x){return x!==id;}).map(function(x){return W[x]?W[x].n:x;}).join('+')+')':''),tiempo:tiempo,reasi:h.pref.indexOf(id)<0,minutos:mE,comp:true,compId:h.t});});}
+    }else{
+      var tg=null;for(var i=0;i<h.pref.length;i++){if(presentes[h.pref[i]]){tg=h.pref[i];break;}}
+      if(!tg){for(var j=0;j<h.alt.length;j++){if(presentes[h.alt[j]]){tg=h.alt[j];break;}}}
+      if(tg){var ir=h.pref.indexOf(tg)<0;if(!ok(tg,h.min)){var al=h.alt.filter(function(id){return presentes[id]&&ok(id,h.min);});if(al.length>0){tg=mc(al);ir=true;}}hU[tg]+=h.min;asig[tg][h.p].push({n:h.t,tiempo:tiempo,reasi:ir,minutos:h.min});}
     }
   });
   return{asig:asig,horas:hU};
@@ -683,55 +710,79 @@ function toggleAus(id){if(!esAdm())return;if(aus.has(id)){aus.delete(id);}else{a
 // Panel de redistribución: muestra tareas de ausentes para asignar
 function rRedistrib(){
   var el=document.getElementById('redistrib-panel');if(!el)return;
-  if(aus.size===0){el.innerHTML='<p style="color:var(--ink3);font-size:12px">No hay ausentes. Marca un trabajador como ausente para ver sus tareas.</p>';return;}
+  if(aus.size===0){el.innerHTML='<p style="color:var(--ink3);font-size:12px">No hay ausentes. Marca un trabajador como ausente arriba.</p>';return;}
   var horarios=getHorarios(),presentes=pres();
+  var ems=getEms().filter(function(e){return e.fecha===HOY;});
+  var overrides={};
+  ems.forEach(function(e){if(e.override&&e.tareaOrig)overrides[e.tareaOrig]=e;});
+
   var h='';
-  // Para cada ausente, mostrar sus tareas
+  // Tareas de ausentes para redistribuir
   aus.forEach(function(ausId){
     if(!W[ausId]) return;
     var tareasAus=horarios.filter(function(t){return t.pref.indexOf(ausId)>=0;});
     if(tareasAus.length===0) return;
-    h+='<div class="card" style="margin:8px 0;padding:12px;border-left:4px solid var(--danger)">';
-    h+='<div style="font-weight:700;font-size:14px;color:var(--danger);margin-bottom:8px">❌ '+W[ausId].n+' — AUSENTE</div>';
-    h+='<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">Sus tareas necesitan ser cubiertas:</div>';
+    h+='<div style="margin:8px 0;padding:12px;background:var(--rbg);border-radius:8px;border-left:4px solid var(--danger)">';
+    h+='<div style="font-weight:700;font-size:14px;color:var(--danger);margin-bottom:8px">❌ '+W[ausId].n+' ausente — redistribuir:</div>';
     tareasAus.forEach(function(t,ti){
       var tiempo=t.min>=60?(t.min/60).toFixed(1)+'h':t.min+'min';
-      // Buscar quién puede cubrirla
-      var candidatos=[];
-      Object.keys(presentes).forEach(function(pid){
-        if(pid!==ausId) candidatos.push(pid);
-      });
-      h+='<div style="background:var(--rbg);border-radius:8px;padding:8px 10px;margin:4px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">';
-      h+='<div><span style="font-size:12px;font-weight:600">'+t.t+'</span><span style="font-size:10px;color:var(--purple);margin-left:6px">'+tiempo+'</span></div>';
-      h+='<div style="display:flex;gap:4px;align-items:center">';
-      h+='<select id="red-'+ausId+'-'+ti+'" style="padding:4px;font-size:11px;border:1px solid var(--border);border-radius:4px">';
-      h+='<option value="">Asignar a...</option>';
-      candidatos.forEach(function(pid){
-        h+='<option value="'+pid+'">'+W[pid].n+'</option>';
-      });
-      h+='</select>';
-      h+='<button class="btn" style="font-size:10px;background:var(--green);color:#fff;padding:4px 8px" onclick="asignarRedistrib(\''+ausId+'\','+ti+',\''+t.t.replace(/'/g,"\\'")+'\','+t.min+')">✓</button>';
-      h+='</div></div>';
+      var yaAsignada=overrides[t.t];
+      if(yaAsignada){
+        h+='<div style="background:var(--gbg);border-radius:6px;padding:6px 10px;margin:4px 0;display:flex;justify-content:space-between;align-items:center">';
+        h+='<span style="font-size:12px">✅ <strong>'+t.t+'</strong> ('+tiempo+') → <strong>'+(W[yaAsignada.wid]?W[yaAsignada.wid].n:yaAsignada.wid)+'</strong></span>';
+        h+='<button class="btn" style="font-size:10px;background:var(--rbg);color:var(--danger);padding:3px 6px" onclick="delOverride(\''+t.t.replace(/'/g,"\\'")+'\')">✗ Quitar</button>';
+        h+='</div>';
+      } else {
+        var candidatos=Object.keys(presentes);
+        h+='<div style="background:#fff;border-radius:6px;padding:6px 10px;margin:4px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;border:1px solid var(--border)">';
+        h+='<span style="font-size:12px;font-weight:600">'+t.t+' <span style="color:var(--purple)">'+tiempo+'</span></span>';
+        h+='<div style="display:flex;gap:4px"><select id="red-'+ausId+'-'+ti+'" style="padding:3px;font-size:11px;border:1px solid var(--border);border-radius:4px"><option value="">Asignar a...</option>';
+        candidatos.forEach(function(pid){h+='<option value="'+pid+'">'+W[pid].n+'</option>';});
+        h+='</select><button class="btn" style="font-size:10px;background:var(--green);color:#fff;padding:3px 8px" onclick="asignarRedistrib(\''+ausId+'\','+ti+',\''+t.t.replace(/'/g,"\\'")+'\','+t.min+')">✓</button></div>';
+        h+='</div>';
+      }
     });
     h+='</div>';
   });
-  // Mostrar horas actuales de presentes
+
+  // Mostrar horarios de todos los presentes de granja
   var r=asignar();
-  h+='<div style="margin-top:12px;font-weight:700;font-size:13px">📊 Carga actual de presentes:</div>';
+  h+='<div style="margin-top:16px;padding:12px;background:var(--card);border-radius:8px;border:1px solid var(--border)">';
+  h+='<div style="font-weight:700;font-size:13px;margin-bottom:8px">📋 Horarios actuales de presentes:</div>';
   Object.keys(presentes).forEach(function(pid){
+    var w=W[pid];if(!w)return;
     var m=r.horas[pid]||0,pct=Math.min(100,Math.round(m/MAX_MIN*100));
     var col=pct>100?'var(--danger)':pct>85?'var(--amber)':'var(--green)';
-    h+='<div style="display:flex;justify-content:space-between;font-size:12px;margin:4px 0"><span>'+W[pid].ic+' '+W[pid].n+'</span><span style="font-weight:600;color:'+col+'">'+(m/60).toFixed(1)+'h/'+MAX_H+'h</span></div>';
+    h+='<div style="margin:8px 0;padding:8px;background:var(--bg);border-radius:6px">';
+    h+='<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600"><span>'+w.ic+' '+w.n+'</span><span style="color:'+col+'">'+(m/60).toFixed(1)+'h/'+MAX_H+'h</span></div>';
+    h+='<div class="horas-bar" style="margin:4px 0"><div class="horas-bar-fill" style="width:'+pct+'%;background:'+col+'"></div></div>';
+    // Listar tareas de este trabajador
+    ['verde','azul','rojo'].forEach(function(p){
+      (r.asig[pid][p]||[]).forEach(function(it){
+        var ico=p==='verde'?'🟢':p==='azul'?'🔵':'🔴';
+        h+='<div style="font-size:11px;padding:2px 0;color:var(--ink2)">'+ico+' '+it.n+' ('+it.tiempo+')'+(it.reasi?' <span style="color:var(--amber);font-weight:600">REASI</span>':'')+'</div>';
+      });
+    });
+    h+='</div>';
   });
+  h+='</div>';
   el.innerHTML=h;
+}
+function delOverride(tarea){
+  var ems=getEms().filter(function(e){return !(e.override&&e.tareaOrig===tarea);});
+  localStorage.setItem('gem',JSON.stringify(ems));
+  rRedistrib();renderAll();
 }
 function asignarRedistrib(ausId,ti,tarea,min){
   var sel=document.getElementById('red-'+ausId+'-'+ti);
   if(!sel||!sel.value){alert('Selecciona un trabajador');return;}
   var ems=getEms();
-  ems.push({id:Date.now(),wid:sel.value,tarea:'[de '+W[ausId].n+'] '+tarea,min:min,prio:'verde',fecha:HOY});
+  // Eliminar override anterior de esta tarea si existe
+  ems=ems.filter(function(e){return !(e.override&&e.tareaOrig===tarea);});
+  // Guardar como override (sobreescribe la asignación automática)
+  ems.push({id:Date.now(),wid:sel.value,tarea:'[de '+W[ausId].n+'] '+tarea,tareaOrig:tarea,min:min,prio:'verde',fecha:HOY,override:true});
   localStorage.setItem('gem',JSON.stringify(ems));
-  rEms();rRedistrib();rTareas();
+  rEms();rRedistrib();renderAll();
 }
 
 function rHist(){
