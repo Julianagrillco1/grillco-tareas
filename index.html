@@ -716,21 +716,26 @@ function asignar(){
       if(!tg){for(var j=0;j<h.alt.length;j++){if(presentes[h.alt[j]]){tg=h.alt[j];break;}}}
       if(tg){
         var ir=h.pref.indexOf(tg)<0;
-        // Si excede 8h: para rojas y azules, buscar otro o DESCARTAR
         if(!ok(tg,h.min)){
-          if(h.p==='rojo'||h.p==='azul'){
-            // Buscar alguien que pueda
-            var al2=h.alt.filter(function(id){return presentes[id]&&ok(id,h.min);});
-            if(al2.length>0){tg=mc(al2);ir=true;}
+          // Buscar en alts primero
+          var al2=h.alt.filter(function(id){return presentes[id]&&ok(id,h.min);});
+          if(al2.length>0){tg=mc(al2);ir=true;}
+          else{
+            // Buscar en CUALQUIER trabajador presente con horas libres
+            var todos=Object.keys(presentes).filter(function(id){return ok(id,h.min);});
+            if(todos.length>0){tg=mc(todos);ir=true;}
             else{
-              // Nadie puede → NO SE HACE (descartar tarea de baja prioridad)
-              return;
+              // NADIE tiene horas → asignar al que tenga MENOS carga (parcial hasta 8h)
+              var menosOcupado=mc(Object.keys(presentes));
+              if(menosOcupado&&(hU[menosOcupado]||0)<MAX_MIN){tg=menosOcupado;ir=true;}
+              else if(h.p==='verde'){
+                // Verde obligatoria: asignar aunque exceda
+                tg=mc(Object.keys(presentes))||tg;ir=true;
+              } else {
+                // Solo descartar si TODOS están a 8h+ y es azul/roja
+                return;
+              }
             }
-          } else {
-            // Verde: buscar alternativa, si no hay asignar igual (excede pero es prioritaria)
-            var al3=h.alt.filter(function(id){return presentes[id]&&ok(id,h.min);});
-            if(al3.length>0){tg=mc(al3);ir=true;}
-            // Si no hay alternativa, se asigna al preferido aunque exceda (es verde, obligatoria)
           }
         }
         hU[tg]+=h.min;asig[tg][h.p].push({n:h.t,tiempo:tiempo,reasi:ir,minutos:h.min});
