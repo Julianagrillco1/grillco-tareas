@@ -757,7 +757,7 @@ function toggleCheck(wid,tid,tname,isComp,compId){
   if(isComp&&compId){var r=asignar();Object.keys(r.asig).forEach(function(oid){if(oid===wid)return;['verde','azul','rojo'].forEach(function(p){(r.asig[oid][p]||[]).forEach(function(it,idx){if(it.comp&&it.compId===compId){localStorage.setItem('t-'+oid+'-'+p+'-'+idx,done?'0':'1');sH(oid,tname,!done,'Por '+((W[wid]||{}).n||wid));}});});});}
   rTareas();guardarSnapshot();syncSubir();
   // Guardar en historial Supabase
-  sbHistorial(wid,tname,0,'',!done,'','',');
+  sbHistorial(wid,tname,0,'',!done,'','','');
 }
 function saveObs(wid,tid,tname,val){localStorage.setItem('obs-'+wid+'-'+tid,val);if(val.trim())sH(wid,tname+' (obs)',true,val);}
 
