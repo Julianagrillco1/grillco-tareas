@@ -153,7 +153,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 
 <!-- Equipo -->
 <div id="s-equipo" class="sec">
-<div class="card"><div class="ct">👥 Equipo — <span id="dnom"></span></div><p style="font-size:12px;color:var(--ink3);margin-top:4px">Toca para marcar ausencia. La IA se activa automáticamente.</p></div>
+<div class="card"><div class="ct">👥 Equipo — <span id="dnom"></span></div><p style="font-size:12px;color:var(--ink3);margin-top:4px">Toca para marcar ausencia. La IA se activa automáticamente.</p><button class="btn" style="font-size:10px;background:var(--danger);color:#fff;margin-top:6px" onclick="sbLimpiar()">🗑 Resetear ausentes (limpiar Supabase)</button></div>
 <div id="wl" class="wg"></div>
 <div class="card" style="margin-top:16px;border-left:4px solid var(--purple)"><div class="ct">⏰ Horas por trabajador hoy</div><div id="horas-panel" style="margin-top:10px"></div></div>
 <div class="card" style="margin-top:16px;border-left:4px solid var(--green)"><div class="ct">📋 Catálogo de tareas — Horas configurables</div><p style="font-size:11px;color:var(--ink3);margin:6px 0 10px">Modifica los minutos de cada tarea.</p><div id="catalogo-panel"></div><button class="btn btn-p" style="margin-top:10px" onclick="resetCatalogo()">🔄 Restaurar valores originales</button></div>
@@ -536,7 +536,13 @@ function sbRPC(fn){return fetch(SB+'/rest/v1/rpc/powerbi_'+fn,{method:'POST',hea
 
 // SUPABASE: Estado compartido (tiempo real entre dispositivos)
 function sbSet(clave,valor){
-  return fetch(SB+'/rest/v1/gc_estado',{method:'POST',headers:{apikey:SK,Authorization:'Bearer '+SK,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},body:JSON.stringify({clave:clave,valor:JSON.stringify(valor),fecha:HOY,actualizado:new Date().toISOString()})}).catch(function(e){console.log('sbSet error:',e);});
+  // Borrar primero, luego insertar (evita duplicados)
+  return fetch(SB+'/rest/v1/gc_estado?clave=eq.'+encodeURIComponent(clave)+'&fecha=eq.'+HOY,{method:'DELETE',headers:{apikey:SK,Authorization:'Bearer '+SK}}).then(function(){
+    return fetch(SB+'/rest/v1/gc_estado',{method:'POST',headers:{apikey:SK,Authorization:'Bearer '+SK,'Content-Type':'application/json'},body:JSON.stringify({clave:clave,valor:JSON.stringify(valor),fecha:HOY,actualizado:new Date().toISOString()})});
+  }).catch(function(e){console.log('sbSet error:',e);});
+}
+function sbLimpiar(){
+  fetch(SB+'/rest/v1/gc_estado?fecha=eq.'+HOY,{method:'DELETE',headers:{apikey:SK,Authorization:'Bearer '+SK}}).then(function(){aus.clear();renderAll();alert('Supabase limpiado. Ausentes reseteados.');}).catch(function(e){alert('Error: '+e.message);});
 }
 function sbGet(clave){
   return fetch(SB+'/rest/v1/gc_estado?clave=eq.'+encodeURIComponent(clave)+'&fecha=eq.'+HOY+'&select=valor&order=actualizado.desc&limit=1',{headers:{apikey:SK,Authorization:'Bearer '+SK}}).then(function(r){return r.json();}).then(function(d){return(d&&d.length>0&&d[0].valor)?JSON.parse(d[0].valor):null;}).catch(function(){return null;});
