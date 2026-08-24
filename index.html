@@ -721,13 +721,13 @@ function asignar(){
           var al2=h.alt.filter(function(id){return presentes[id]&&ok(id,h.min);});
           if(al2.length>0){tg=mc(al2);ir=true;}
           else{
-            // Buscar en CUALQUIER trabajador presente con horas libres
-            // EXCLUIR: Damia (medio día, no puede más) y Marina (solo incubación)
-            var todos=Object.keys(presentes).filter(function(id){return id!=='damia'&&id!=='marina'&&ok(id,h.min);});
+            // Buscar en trabajadores de GRANJA + Begoña (nunca Rodrigo, Marina, Damia)
+            var granja=['napoleon','ali','emmanuel','zakaria','begona'];
+            var todos=granja.filter(function(id){return presentes[id]&&ok(id,h.min);});
             if(todos.length>0){tg=mc(todos);ir=true;}
             else{
-              // NADIE tiene horas → asignar al que tenga MENOS carga (no Damia, no Marina para granja)
-              var candidatos=Object.keys(presentes).filter(function(id){return id!=='damia'&&id!=='marina';});
+              // Nadie con horas completas → asignar al de granja con MENOS carga
+              var candidatos=granja.filter(function(id){return presentes[id];});
               var menosOcupado=mc(candidatos);
               if(menosOcupado&&(hU[menosOcupado]||0)<MAX_MIN){tg=menosOcupado;ir=true;}
               else if(h.p==='verde'){
